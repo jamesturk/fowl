@@ -60,12 +60,22 @@ admin.site.register(Event)
 WIN_TYPES = (('pin', 'pin'),
              ('DQ', 'DQ'),
              ('submission', 'submission'))
+TITLES = (('wwe', 'WWE'),
+          ('heavyweight', 'Heavyweight'),
+          ('ic', 'Intercontinental'),
+          ('us', 'United States'),
+          ('tag', 'Tag Team'),
+          ('diva', 'Divas'),
+         )
 class Match(models.Model):
     event = models.ForeignKey(Event, related_name='matches')
+    winner = models.ForeignKey(Star, null=True)
     win_type = models.CharField(max_length=10, choices=WIN_TYPES)
+    title_at_stake = models.BooleanField(default=False)
 
-    def add_team(self, *members):
-        mt = MatchTeam.objects.create(match=self)
+    def add_team(self, *members, **kwargs):
+        title = kwargs.get('title', None)
+        mt = MatchTeam.objects.create(match=self, title=title)
         for member in members:
             member = Star.objects.get(pk=member)
             mt.members.add(member)
@@ -73,22 +83,76 @@ class Match(models.Model):
     def record_win(self, star, win_type):
         self.teams.filter(members__pk=star).update(victorious=True)
         self.win_type = win_type
+        self.winner__pk = star
         self.save()
 
+
     def points(self):
-        winners = self.teams.filter(victorious=True)
         points = {}
+        winners = self.teams.filter(victorious=True)
+
         if winners:
             winners = winners[0]
-            allies = winners.members.count() - 1
-            opponents = self.teams.filter(victorious=False).aggregate(
-                              opponents=models.Count('members'))['opponents']
+            winner_count = winners.members.count()
+            losers = [x.mcount for x in self.teams.all().annotate(mcount=models.Count('members'))]
+            loser_count = sum(losers)
+
+            # figure out base points for winning
+            # DQ wins are worth 1 point no matter what
+            if self.win_type == 'DQ':
+                base_points = 1
+                allies = 0   # allies don't matter in a DQ
+            # rumble is worth participants/2
+            elif self.teams.count() > 6:
+                base_points = self.teams.count() / 2
+                allies = 0   # no allies in a rumble
+            else:
+                # normal wins are worth 2
+                allies = winner_count - 1
+                opponents = self.teams.filter(victorious=False).aggregate(
+                                  opponents=models.Count('members'))['opponents']
+                base_points = max((opponents - allies) * 2, 1)
+
+            # award points to winners
             for w in winners.members.all():
-                points[w.id] = max((opponents - allies)*2, 1)
+                points[w.id] = base_points
+
+                # if multiple people in this match and this person was credited
+                # w/ win, give them the bonus points
+                if allies and w.id == self.winner__pk:
+                    points[w.id] += 1
+                if w.id == self.winner__pk and self.win_type == 'submission':
+                    points[w.id] += 1
+
+                # look over all titles in this match
+                for t in self.teams.values_list('title', flat=True):
+                    # skip titles we hold or people without titles
+                    if t is None:
+                        continue
+                    # title defense
+                    elif winners.title == t and self.title_at_stake:
+                        if t in ('heavyweight', 'wwe'):
+                            points[w.id] += 5
+                        else:
+                            points[w.id] += 3
+                    # beat someone w/ title
+                    elif winners.title != t:
+                        # title win
+                        if self.title_at_stake and self.win_type != 'DQ':
+                            if t in ('heavyweight', 'wwe'):
+                                points[w.id] += 20
+                            else:
+                                points[w.id] += 10
+                        elif self.title_at_stake and self.win_type != 'DQ':
+                            for star in self.teams.get(title=t).members.all():
+                                points[star.id] += 1
+                        # beat tag champs in tag match w/o tag belt on line
+                        elif t == 'tag' and all(c == 2 for c in losers):
+                            points[w.id] += 2
+                        # beat champ in non-handicap match w/o belt on line
+                        elif all(c == 1 for c in losers):
+                            points[w.id] += 2
         return points
-
-
-
 
     def __unicode__(self):
         return ' vs. '.join(str(t) for t in self.teams.all())
@@ -99,9 +163,12 @@ class MatchTeam(models.Model):
     members = models.ManyToManyField(Star)
     match = models.ForeignKey(Match, related_name='teams')
     victorious = models.BooleanField(default=False)
+    title = models.CharField(max_length=50, choices=TITLES, null=True)
 
     def __unicode__(self):
         ret = ' & '.join([str(m) for m in self.members.all()])
+        if self.title:
+            ret += ' (c)'
         if self.victorious:
             ret += ' (v)'
         return ret
