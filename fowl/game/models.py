@@ -31,6 +31,20 @@ class League(models.Model):
     wildcard_picks = models.IntegerField(default=1)
     oldtimer_picks = models.IntegerField(default=2)
 
+    def score_event(self, event):
+        ppv_bonus = 1 if event.name.lower() not in ('raw', 'smackdown') else 0
+        TeamPoints.objects.filter(match__event=event).delete()
+        for match in event.matches.all():
+            for star, points in match.points().iteritems():
+                try:
+                    team = self.teams.get(stars=star)
+                    TeamPoints.objects.create(points=points + ppv_bonus,
+                                              team=team,
+                                              star_id=star,
+                                              match=match)
+                except Team.DoesNotExist:
+                    pass
+
     def __unicode__(self):
         return self.name
 
@@ -200,3 +214,13 @@ class MatchTeam(models.Model):
         if self.victorious:
             ret += ' (v)'
         return ret
+
+class TeamPoints(models.Model):
+    points = models.IntegerField()
+    team = models.ForeignKey(Team, related_name='points')
+    star = models.ForeignKey(Star)
+    match = models.ForeignKey(Match)
+
+    def __unicode__(self):
+        return "{0} recieved {1} points for {2}'s performance in {3}".format(
+                self.team, self.points, self.star, self.match)

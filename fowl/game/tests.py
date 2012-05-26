@@ -1,6 +1,7 @@
 from django.test import TestCase
 from django.core.management import call_command
-from .models import Match, Event
+from django.contrib.auth.models import User
+from .models import Match, Event, League, Team, TeamPoints
 
 class MatchTest(TestCase):
     fixtures = ['testdata']
@@ -195,49 +196,65 @@ class MatchTest(TestCase):
                                           'cmpunk': 0, 'christian': 0})
 
 
-class EventTest(TestCase):
+
+class LeagueTest(TestCase):
     fixtures = ['testdata']
 
-    def test_points(self):
-        smackdown = Event.objects.create(name='smackdown', date='2012-01-01')
-        match = Match.objects.create(event=smackdown)
-        match.add_team('reymysterio')
-        match.add_team('sin-cara')
-        match.record_win('sin-cara', 'pin')
-        match = Match.objects.create(event=smackdown)
-        match.add_team('santinomarella', 'mickfoley')
-        match.add_team('markhenry')
-        match.record_win('mickfoley', 'pin')
-        match = Match.objects.create(event=smackdown, title_at_stake=True)
-        match.add_team('codyrhodes', title='ic')
-        match.add_team('sin-cara')
-        match.record_win('sin-cara', 'pin')
-        self.assertEqual(smackdown.points(), {'reymysterio': 0,
-                                              'sin-cara': 14,
-                                              'santinomarella': 1,
-                                              'mickfoley': 2,
-                                              'markhenry': 0,
-                                              'codyrhodes': 0
-                                              })
+    def setUp(self):
+        self.user = User.objects.create_user('me', 'test@example.com',
+                                              'password')
+        self.user2 = User.objects.create_user('me2', 'test@example.com',
+                                              'password')
+        self.league = League.objects.create(name='FOWL')
+        self.teddy = Team.objects.create(name='Team Teddy', login=self.user,
+                                   league=self.league)
+        self.johnny = Team.objects.create(name='Team Johnny', login=self.user2,
+                                    league=self.league)
 
-        # exact same matches on a PPV, +1 to everyone
-        ppv = Event.objects.create(name='In Your House', date='2012-01-01')
-        match = Match.objects.create(event=ppv)
-        match.add_team('reymysterio')
-        match.add_team('sin-cara')
-        match.record_win('sin-cara', 'pin')
-        match = Match.objects.create(event=ppv)
-        match.add_team('santinomarella', 'mickfoley')
-        match.add_team('markhenry')
-        match.record_win('mickfoley', 'pin')
-        match = Match.objects.create(event=ppv, title_at_stake=True)
-        match.add_team('codyrhodes', title='ic')
-        match.add_team('sin-cara')
-        match.record_win('sin-cara', 'pin')
-        self.assertEqual(ppv.points(), {'reymysterio': 1,
-                                              'sin-cara': 15,
-                                              'santinomarella': 2,
-                                              'mickfoley': 3,
-                                              'markhenry': 1,
-                                              'codyrhodes': 1
-                                              })
+    def test_team_add_star(self):
+        self.teddy.add_star(pk='reymysterio')
+        self.johnny.add_star(pk='sin-cara')
+        with self.assertRaises(ValueError):
+            self.teddy.add_star(pk='reymysterio')
+        with self.assertRaises(ValueError):
+            self.johnny.add_star(pk='sin-cara')
+
+    def test_score_event(self):
+        self.teddy.add_star(pk='reymysterio')
+        self.teddy.add_star(pk='santinomarella')
+        self.johnny.add_star(pk='sin-cara')
+        self.johnny.add_star(pk='markhenry')
+        event = Event.objects.create(name='smackdown', date='2012-01-01')
+        match1 = Match.objects.create(event=event)
+        match1.add_team('reymysterio')
+        match1.add_team('sin-cara')
+        match1.record_win('sin-cara', 'pin')
+        match2 = Match.objects.create(event=event)
+        match2.add_team('santinomarella', 'mickfoley')
+        match2.add_team('markhenry')
+        match2.record_win('mickfoley', 'pin')
+        match3 = Match.objects.create(event=event, title_at_stake=True)
+        match3.add_team('codyrhodes', title='ic')
+        match3.add_team('sin-cara')
+        match3.record_win('sin-cara', 'pin')
+        self.league.score_event(event)
+
+        # check TeamPoints objects
+        self.assertEqual(TeamPoints.objects.get(team=self.teddy, star__pk='reymysterio').points, 0)
+        self.assertEqual(TeamPoints.objects.get(team=self.teddy, star__pk='santinomarella').points, 1)
+        self.assertEqual(TeamPoints.objects.get(team=self.johnny, match=match1, star__pk='sin-cara').points, 2)
+        self.assertEqual(TeamPoints.objects.get(team=self.johnny, match=match3, star__pk='sin-cara').points, 12)
+        self.assertEqual(TeamPoints.objects.get(team=self.johnny, star__pk='markhenry').points, 0)
+        for obj in TeamPoints.objects.all():
+            print obj
+
+        # rename the event and rescore
+        event.name = 'Wrestlemania'
+        event.save()
+        self.league.score_event(event)
+        # all should be one higher than before
+        self.assertEqual(TeamPoints.objects.get(team=self.teddy, star__pk='reymysterio').points, 1)
+        self.assertEqual(TeamPoints.objects.get(team=self.teddy, star__pk='santinomarella').points, 2)
+        self.assertEqual(TeamPoints.objects.get(team=self.johnny, match=match1, star__pk='sin-cara').points, 3)
+        self.assertEqual(TeamPoints.objects.get(team=self.johnny, match=match3, star__pk='sin-cara').points, 13)
+        self.assertEqual(TeamPoints.objects.get(team=self.johnny, star__pk='markhenry').points, 1)
