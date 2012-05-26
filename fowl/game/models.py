@@ -91,15 +91,22 @@ class Match(models.Model):
     def points(self):
         points = {}
         winners = None
+        losers = []
+        title_teams = {}
+        team_count = 0
         for team in self.teams.all():
             for star in team.members.all():
                 points[star.id] = 0
+            if team.title:
+                title_teams[team.title] = team
             if team.victorious:
                 winners = team
+            else:
+                losers.append(team.members.count())
+            team_count += 1
 
         if winners:
             winner_count = winners.members.count()
-            losers = [x.mcount for x in self.teams.all().annotate(mcount=models.Count('members'))]
             loser_count = sum(losers)
 
             # figure out base points for winning
@@ -108,15 +115,13 @@ class Match(models.Model):
                 base_points = 1
                 allies = 0   # allies don't matter in a DQ
             # rumble is worth participants/2
-            elif self.teams.count() > 6:
-                base_points = self.teams.count() / 2
+            elif team_count > 6:
+                base_points = team_count / 2
                 allies = 0   # no allies in a rumble
             else:
                 # normal wins are worth 2
                 allies = winner_count - 1
-                opponents = self.teams.filter(victorious=False).aggregate(
-                                  opponents=models.Count('members'))['opponents']
-                base_points = max((opponents - allies) * 2, 1)
+                base_points = max((loser_count - allies) * 2, 1)
 
             # award points to winners
             for w in winners.members.all():
@@ -130,29 +135,27 @@ class Match(models.Model):
                     points[w.id] += 1
 
                 # look over all titles in this match
-                for t in self.teams.values_list('title', flat=True):
-                    # skip titles we hold or people without titles
-                    if t is None:
-                        continue
+                for title, title_team in title_teams.iteritems():
                     # title defense
-                    elif winners.title == t and self.title_at_stake:
-                        if t in ('heavyweight', 'wwe'):
+                    if winners.title == title and self.title_at_stake:
+                        if title in ('heavyweight', 'wwe'):
                             points[w.id] += 5
                         else:
                             points[w.id] += 3
                     # beat someone w/ title
-                    elif winners.title != t:
+                    elif winners.title != title:
                         # title win
                         if self.title_at_stake and self.win_type != 'DQ':
-                            if t in ('heavyweight', 'wwe'):
+                            if title in ('heavyweight', 'wwe'):
                                 points[w.id] += 20
                             else:
                                 points[w.id] += 10
+                        # title team gets a point if they defend title by DQ
                         elif self.title_at_stake and self.win_type == 'DQ':
-                            for star in self.teams.get(title=t).members.all():
+                            for star in title_team.members.all():
                                 points[star.id] += 1
                         # beat tag champs in tag match w/o tag belt on line
-                        elif t == 'tag' and all(c == 2 for c in losers):
+                        elif title == 'tag' and all(c == 2 for c in losers):
                             points[w.id] += 2
                         # beat champ in non-handicap match w/o belt on line
                         elif all(c == 1 for c in losers):
