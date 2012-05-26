@@ -1,3 +1,4 @@
+from collections import defaultdict
 from django.db import models
 from django.contrib import admin
 from django.contrib.auth.models import User
@@ -88,7 +89,7 @@ class Match(models.Model):
 
 
     def points(self):
-        points = {}
+        points = defaultdict(int)
         winners = self.teams.filter(victorious=True)
 
         if winners:
@@ -143,7 +144,7 @@ class Match(models.Model):
                                 points[w.id] += 20
                             else:
                                 points[w.id] += 10
-                        elif self.title_at_stake and self.win_type != 'DQ':
+                        elif self.title_at_stake and self.win_type == 'DQ':
                             for star in self.teams.get(title=t).members.all():
                                 points[star.id] += 1
                         # beat tag champs in tag match w/o tag belt on line
