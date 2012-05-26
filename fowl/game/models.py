@@ -89,11 +89,15 @@ class Match(models.Model):
 
 
     def points(self):
-        points = defaultdict(int)
-        winners = self.teams.filter(victorious=True)
+        points = {}
+        winners = None
+        for team in self.teams.all():
+            for star in team.members.all():
+                points[star.id] = 0
+            if team.victorious:
+                winners = team
 
         if winners:
-            winners = winners[0]
             winner_count = winners.members.count()
             losers = [x.mcount for x in self.teams.all().annotate(mcount=models.Count('members'))]
             loser_count = sum(losers)
