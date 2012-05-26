@@ -192,3 +192,52 @@ class MatchTest(TestCase):
         match.record_win('reymysterio', 'pin')
         self.assertEqual(match.points(), {'codyrhodes': 4, 'reymysterio': 5,
                                           'cmpunk': 0, 'christian': 0})
+
+
+class EventTest(TestCase):
+    def setUp(self):
+        call_command('loadstars')
+
+    def test_points(self):
+        smackdown = Event.objects.create(name='smackdown', date='2012-01-01')
+        match = Match.objects.create(event=smackdown)
+        match.add_team('reymysterio')
+        match.add_team('sin-cara')
+        match.record_win('sin-cara', 'pin')
+        match = Match.objects.create(event=smackdown)
+        match.add_team('santinomarella', 'mickfoley')
+        match.add_team('markhenry')
+        match.record_win('mickfoley', 'pin')
+        match = Match.objects.create(event=smackdown, title_at_stake=True)
+        match.add_team('codyrhodes', title='ic')
+        match.add_team('sin-cara')
+        match.record_win('sin-cara', 'pin')
+        self.assertEqual(smackdown.points(), {'reymysterio': 0,
+                                              'sin-cara': 14,
+                                              'santinomarella': 1,
+                                              'mickfoley': 2,
+                                              'markhenry': 0,
+                                              'codyrhodes': 0
+                                              })
+
+        # exact same matches on a PPV, +1 to everyone
+        ppv = Event.objects.create(name='In Your House', date='2012-01-01')
+        match = Match.objects.create(event=ppv)
+        match.add_team('reymysterio')
+        match.add_team('sin-cara')
+        match.record_win('sin-cara', 'pin')
+        match = Match.objects.create(event=ppv)
+        match.add_team('santinomarella', 'mickfoley')
+        match.add_team('markhenry')
+        match.record_win('mickfoley', 'pin')
+        match = Match.objects.create(event=ppv, title_at_stake=True)
+        match.add_team('codyrhodes', title='ic')
+        match.add_team('sin-cara')
+        match.record_win('sin-cara', 'pin')
+        self.assertEqual(ppv.points(), {'reymysterio': 1,
+                                              'sin-cara': 15,
+                                              'santinomarella': 2,
+                                              'mickfoley': 3,
+                                              'markhenry': 1,
+                                              'codyrhodes': 1
+                                              })

@@ -10,6 +10,9 @@ class Star(models.Model):
     division = models.CharField(max_length=100)
     active = models.BooleanField()
 
+    def drafted(self, league):
+        return self.teams.filter(league=league).count() >= 1
+
     def __unicode__(self):
         return self.name
 
@@ -40,6 +43,13 @@ class Team(models.Model):
     league = models.ForeignKey(League, related_name='teams')
     stars = models.ManyToManyField(Star, related_name='teams')
 
+    def add_star(self, **kwargs):
+        member = Star.objects.get(**kwargs)
+        if member.drafted(self.league):
+            raise ValueError('cannot add {0}, already drafted in {1}'.format(
+                             member, self.league))
+        self.stars.add(member)
+
     def __unicode__(self):
         return self.name
 
@@ -52,6 +62,17 @@ admin.site.register(Team, TeamAdmin)
 class Event(models.Model):
     name = models.CharField(max_length=100)
     date = models.DateField()
+
+    def points(self):
+        total = defaultdict(int)
+        for match in self.matches.all():
+            for star, points in match.points().iteritems():
+                total[star] += points
+        # PPV bonus
+        if self.name.lower() not in ('smackdown', 'raw'):
+            for star in total:
+                total[star] += 1
+        return total
 
     def __unicode__(self):
         return '{0} {1}'.format(self.name, self.date)
@@ -84,9 +105,8 @@ class Match(models.Model):
     def record_win(self, star, win_type):
         self.teams.filter(members__pk=star).update(victorious=True)
         self.win_type = win_type
-        self.winner__pk = star
+        self.winner_id = star
         self.save()
-
 
     def points(self):
         points = {}
@@ -129,9 +149,9 @@ class Match(models.Model):
 
                 # if multiple people in this match and this person was credited
                 # w/ win, give them the bonus points
-                if allies and w.id == self.winner__pk:
+                if allies and w.id == self.winner_id:
                     points[w.id] += 1
-                if w.id == self.winner__pk and self.win_type == 'submission':
+                if w.id == self.winner_id and self.win_type == 'submission':
                     points[w.id] += 1
 
                 # look over all titles in this match
