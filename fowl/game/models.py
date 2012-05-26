@@ -71,9 +71,24 @@ class Match(models.Model):
             mt.members.add(member)
 
     def record_win(self, star, win_type):
-        self.teams.find(members__pk=star).update(victorious=True)
+        self.teams.filter(members__pk=star).update(victorious=True)
         self.win_type = win_type
         self.save()
+
+    def points(self):
+        winners = self.teams.filter(victorious=True)
+        points = {}
+        if winners:
+            winners = winners[0]
+            allies = winners.members.count() - 1
+            opponents = self.teams.filter(victorious=False).aggregate(
+                              opponents=models.Count('members'))['opponents']
+            for w in winners.members.all():
+                points[w.id] = max((opponents - allies)*2, 1)
+        return points
+
+
+
 
     def __unicode__(self):
         return ' vs. '.join(str(t) for t in self.teams.all())
@@ -86,4 +101,7 @@ class MatchTeam(models.Model):
     victorious = models.BooleanField(default=False)
 
     def __unicode__(self):
-        return ' & '.join([str(m) for m in self.members.all()])
+        ret = ' & '.join([str(m) for m in self.members.all()])
+        if self.victorious:
+            ret += ' (v)'
+        return ret
