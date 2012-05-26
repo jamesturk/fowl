@@ -16,17 +16,14 @@ cobra = Team.objects.create(name='COBRA!', login=erin, league=league)
 punks = ('cmpunk', 'kane', 'rtruth', 'codyrhodes', 'sin-cara', 'antoniocesaro',
          'wadebarrett', 'aj', 'bethphoenix')
 for person in punks:
-    print person
     gm_punk.add_star(pk=person)
 
 awesomes = ('chrisjericho', 'sheamus', 'danielbryan', 'ryback', 'damien-sandow',
             'kharma', 'kellykelly', 'brodusclay', 'johncena')
 for person in awesomes:
-    print person
     awesome.add_star(pk=person)
 
 cobras = ('santinomarella', 'dolphziggler', 'kofikingston', 'albertodelrio',
           'randyorton', 'bigshow', 'christian', 'layla', 'natalya')
 for person in cobras:
-    print person
     cobra.add_star(pk=person)

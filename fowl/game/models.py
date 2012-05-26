@@ -3,11 +3,23 @@ from django.db import models
 from django.contrib import admin
 from django.contrib.auth.models import User
 
+WIN_TYPES = (('pin', 'pin'),
+             ('DQ', 'DQ'),
+             ('submission', 'submission'))
+TITLES = (('wwe', 'WWE'),
+          ('heavyweight', 'Heavyweight'),
+          ('ic', 'Intercontinental'),
+          ('us', 'United States'),
+          ('tag', 'Tag Team'),
+          ('diva', 'Divas'),
+         )
+
 class Star(models.Model):
     id = models.CharField(max_length=100, primary_key=True)
     name = models.CharField(max_length=200)
     photo_url = models.URLField()
     division = models.CharField(max_length=100)
+    title = models.CharField(max_length=20, choices=TITLES)
     active = models.BooleanField()
 
     def drafted(self, league):
@@ -77,32 +89,26 @@ class Event(models.Model):
     name = models.CharField(max_length=100)
     date = models.DateField()
 
-    def points(self):
-        total = defaultdict(int)
-        for match in self.matches.all():
-            for star, points in match.points().iteritems():
-                total[star] += points
-        # PPV bonus
-        if self.name.lower() not in ('smackdown', 'raw'):
-            for star in total:
-                total[star] += 1
-        return total
+    def add_match(self, *teams, **kwargs):
+        winner = kwargs.get('winner', None)
+        win_type = kwargs.get('win_type', None)
+        title_at_stake = kwargs.get('title_at_stake', False)
+
+        match = Match.objects.create(event=self, title_at_stake=title_at_stake)
+        for team in teams:
+            if isinstance(team, (list, tuple)):
+                match.add_team(*team)
+            else:
+                match.add_team(team)
+        if winner:
+            match.record_win(winner, win_type)
+        return match
 
     def __unicode__(self):
         return '{0} {1}'.format(self.name, self.date)
 
 admin.site.register(Event)
 
-WIN_TYPES = (('pin', 'pin'),
-             ('DQ', 'DQ'),
-             ('submission', 'submission'))
-TITLES = (('wwe', 'WWE'),
-          ('heavyweight', 'Heavyweight'),
-          ('ic', 'Intercontinental'),
-          ('us', 'United States'),
-          ('tag', 'Tag Team'),
-          ('diva', 'Divas'),
-         )
 class Match(models.Model):
     event = models.ForeignKey(Event, related_name='matches')
     winner = models.ForeignKey(Star, null=True)
@@ -114,12 +120,15 @@ class Match(models.Model):
         mt = MatchTeam.objects.create(match=self, title=title)
         for member in members:
             member = Star.objects.get(pk=member)
+            if not mt.title and member.title:
+                mt.title = member.title
+                mt.save()
             mt.members.add(member)
 
     def record_win(self, star, win_type):
         self.teams.filter(members__pk=star).update(victorious=True)
-        self.win_type = win_type
         self.winner_id = star
+        self.win_type = win_type
         self.save()
 
     def points(self):

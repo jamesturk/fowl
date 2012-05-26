@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.core.management import call_command
 from django.contrib.auth.models import User
-from .models import Match, Event, League, Team, TeamPoints
+from .models import Match, Event, League, Team, TeamPoints, Star
 
 class MatchTest(TestCase):
     fixtures = ['testdata']
@@ -225,18 +225,13 @@ class LeagueTest(TestCase):
         self.johnny.add_star(pk='sin-cara')
         self.johnny.add_star(pk='markhenry')
         event = Event.objects.create(name='smackdown', date='2012-01-01')
-        match1 = Match.objects.create(event=event)
-        match1.add_team('reymysterio')
-        match1.add_team('sin-cara')
-        match1.record_win('sin-cara', 'pin')
-        match2 = Match.objects.create(event=event)
-        match2.add_team('santinomarella', 'mickfoley')
-        match2.add_team('markhenry')
-        match2.record_win('mickfoley', 'pin')
-        match3 = Match.objects.create(event=event, title_at_stake=True)
-        match3.add_team('codyrhodes', title='ic')
-        match3.add_team('sin-cara')
-        match3.record_win('sin-cara', 'pin')
+        match1 = event.add_match('reymysterio', 'sin-cara', winner='sin-cara',
+                                 win_type='pin')
+        match2 = event.add_match('markhenry', ['santinomarella', 'mickfoley'],
+                                 winner='mickfoley', win_type='pin')
+        Star.objects.filter(pk='codyrhodes').update(title='ic')
+        match3 = event.add_match('sin-cara', 'codyrhodes', title_at_stake=True,
+                                 winner='sin-cara', win_type='pin')
         self.league.score_event(event)
 
         # check TeamPoints objects
@@ -245,8 +240,6 @@ class LeagueTest(TestCase):
         self.assertEqual(TeamPoints.objects.get(team=self.johnny, match=match1, star__pk='sin-cara').points, 2)
         self.assertEqual(TeamPoints.objects.get(team=self.johnny, match=match3, star__pk='sin-cara').points, 12)
         self.assertEqual(TeamPoints.objects.get(team=self.johnny, star__pk='markhenry').points, 0)
-        for obj in TeamPoints.objects.all():
-            print obj
 
         # rename the event and rescore
         event.name = 'Wrestlemania'
