@@ -3,8 +3,9 @@ from django.core.management import call_command
 from .models import Match, Event
 
 class MatchTest(TestCase):
+    fixtures = ['testdata']
+
     def setUp(self):
-        call_command('loadstars')
         self.wm29 = Event.objects.create(name='Wrestlemania 29', date='2012-04-01')
 
     def test_display(self):
@@ -195,8 +196,7 @@ class MatchTest(TestCase):
 
 
 class EventTest(TestCase):
-    def setUp(self):
-        call_command('loadstars')
+    fixtures = ['testdata']
 
     def test_points(self):
         smackdown = Event.objects.create(name='smackdown', date='2012-01-01')
