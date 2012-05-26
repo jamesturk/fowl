@@ -96,10 +96,16 @@ class Event(models.Model):
 
         match = Match.objects.create(event=self, title_at_stake=title_at_stake)
         for team in teams:
-            if isinstance(team, (list, tuple)):
-                match.add_team(*team)
-            else:
-                match.add_team(team)
+            mt = MatchTeam.objects.create(match=match)
+            if not isinstance(team, (list, tuple)):
+                team = [team]
+            for member in team:
+                member = Star.objects.get(pk=member)
+                if not mt.title and member.title:
+                    # multiple titles?
+                    mt.title = member.title
+                    mt.save()
+                mt.members.add(member)
         if winner:
             match.record_win(winner, win_type)
         return match
@@ -114,16 +120,6 @@ class Match(models.Model):
     winner = models.ForeignKey(Star, null=True)
     win_type = models.CharField(max_length=10, choices=WIN_TYPES)
     title_at_stake = models.BooleanField(default=False)
-
-    def add_team(self, *members, **kwargs):
-        title = kwargs.get('title', None)
-        mt = MatchTeam.objects.create(match=self, title=title)
-        for member in members:
-            member = Star.objects.get(pk=member)
-            if not mt.title and member.title:
-                mt.title = member.title
-                mt.save()
-            mt.members.add(member)
 
     def record_win(self, star, win_type):
         self.teams.filter(members__pk=star).update(victorious=True)

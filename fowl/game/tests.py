@@ -3,23 +3,23 @@ from django.core.management import call_command
 from django.contrib.auth.models import User
 from .models import Match, Event, League, Team, TeamPoints, Star
 
+def _give_belt(star, belt):
+    Star.objects.filter(pk=star).update(title=belt)
+
 class MatchTest(TestCase):
     fixtures = ['testdata']
 
     def setUp(self):
-        self.wm29 = Event.objects.create(name='Wrestlemania 29', date='2012-04-01')
+        self.event = Event.objects.create(name='Wrestlemania 29', date='2012-04-01')
 
-    def test_display(self):
-        match = Match.objects.create(event=self.wm29)
-        match.add_team('tripleh')
-        match.add_team('undertaker')
+    def test_basics(self):
+        match = self.event.add_match('tripleh', 'undertaker')
         self.assertEqual(unicode(match), 'Triple H vs. Undertaker')
         match.record_win('undertaker', 'pin')
         self.assertEqual(unicode(match), 'Triple H vs. Undertaker (v)')
 
-        match = Match.objects.create(event=self.wm29)
-        match.add_team('cmpunk', title='wwe')
-        match.add_team('reymysterio')
+        _give_belt('cmpunk', 'wwe')
+        match = self.event.add_match('cmpunk', 'reymysterio')
         self.assertEqual(unicode(match), 'CM Punk (c) vs. Rey Mysterio')
         match.record_win('cmpunk', 'pin')
         self.assertEqual(unicode(match), 'CM Punk (c) (v) vs. Rey Mysterio')
@@ -27,96 +27,76 @@ class MatchTest(TestCase):
 
     def test_scoring(self):
         # one on one : 2 points
-        match = Match.objects.create(event=self.wm29)
-        match.add_team('tripleh')
-        match.add_team('undertaker')
-        match.record_win('undertaker', 'pin')
+        match = self.event.add_match('tripleh', 'undertaker',
+                                     winner='undertaker', win_type='pin')
         self.assertEqual(match.points(), {'undertaker': 2, 'tripleh': 0})
 
         # fatal 4 way: 6 points
-        match = Match.objects.create(event=self.wm29)
-        match.add_team('randyorton')
-        match.add_team('albertodelrio')
-        match.add_team('sheamus')
-        match.add_team('chrisjericho')
-        match.record_win('sheamus', 'pin')
+        match = self.event.add_match('randyorton', 'sheamus', 'albertodelrio',
+                                     'chrisjericho', winner='sheamus',
+                                      win_type='pin')
         self.assertEqual(match.points(), {'sheamus': 6, 'randyorton': 0,
                                           'albertodelrio': 0, 'chrisjericho': 0}
                                           )
 
         # win stacked match: 1 point for team (bonuses can apply)
-        match = Match.objects.create(event=self.wm29)
-        match.add_team('santinomarella')
-        match.add_team('markhenry', 'kane')
-        match.record_win('markhenry', 'pin')
+        match = self.event.add_match('santinomarella', ['markhenry', 'kane'],
+                                     winner='markhenry', win_type='pin')
         self.assertEqual(match.points(), {'markhenry': 2, 'kane': 1,
                                           'santinomarella': 0})
 
         # DQ : 1 point
-        match = Match.objects.create(event=self.wm29)
-        match.add_team('kane')
-        match.add_team('undertaker')
-        match.record_win('undertaker', 'DQ')
+        match = self.event.add_match('kane', 'undertaker', winner='undertaker',
+                                     win_type='DQ')
         self.assertEqual(match.points(), {'undertaker': 1, 'kane': 0})
 
         # submission: +1
-        match = Match.objects.create(event=self.wm29)
-        match.add_team('danielbryan')
-        match.add_team('cmpunk')
-        match.record_win('danielbryan', 'submission')
+        match = self.event.add_match('danielbryan', 'cmpunk',
+                                     winner='danielbryan',
+                                     win_type='submission')
         self.assertEqual(match.points(), {'danielbryan': 3, 'cmpunk': 0})
 
         # complicated one, outnumbered + submission
-        match = Match.objects.create(event=self.wm29)
-        match.add_team('danielbryan', 'chrisjericho')
-        match.add_team('cmpunk')
-        match.record_win('cmpunk', 'submission')
+        match = self.event.add_match('cmpunk', ['danielbryan', 'chrisjericho'],
+                                     winner='cmpunk', win_type='submission')
         self.assertEqual(match.points(), {'cmpunk': 5, 'chrisjericho': 0,
                                           'danielbryan': 0})
 
         # tag team: 2 points, +1 for the person who made pin
-        match = Match.objects.create(event=self.wm29)
-        match.add_team('kofikingston', 'rtruth')
-        match.add_team('jackswagger', 'dolphziggler')
-        match.record_win('dolphziggler', 'pin')
+        match = self.event.add_match(['kofikingston', 'rtruth'],
+                                     ['jackswagger', 'dolphziggler'],
+                                     winner='dolphziggler', win_type='pin')
         self.assertEqual(match.points(), {'jackswagger': 2,
                                           'dolphziggler': 3,
                                           'kofikingston': 0,
                                           'rtruth': 0})
 
         # tag team submission: stacks on ziggler
-        match = Match.objects.create(event=self.wm29)
-        match.add_team('kofikingston', 'rtruth')
-        match.add_team('jackswagger', 'dolphziggler')
-        match.record_win('dolphziggler', 'submission')
+        match = self.event.add_match(['kofikingston', 'rtruth'],
+                                     ['jackswagger', 'dolphziggler'],
+                                     winner='dolphziggler',
+                                      win_type='submission')
         self.assertEqual(match.points(), {'jackswagger': 2,
                                           'dolphziggler': 4,
                                           'kofikingston': 0,
                                           'rtruth': 0})
 
         # tag team DQ: 1 point each member
-        match = Match.objects.create(event=self.wm29)
-        match.add_team('kofikingston', 'rtruth')
-        match.add_team('jackswagger', 'dolphziggler')
-        match.record_win('dolphziggler', 'DQ')
+        match = self.event.add_match(['kofikingston', 'rtruth'],
+                                     ['jackswagger', 'dolphziggler'],
+                                     winner='dolphziggler',
+                                      win_type='DQ')
         self.assertEqual(match.points(), {'jackswagger': 1,
                                           'dolphziggler': 1,
                                           'kofikingston': 0,
                                           'rtruth': 0})
 
         # rumble: participants / 2
-        match = Match.objects.create(event=self.wm29)
-        match.add_team('kofikingston')
-        match.add_team('rtruth')
-        match.add_team('themiz')
-        match.add_team('dolphziggler')
-        match.add_team('johncena')
-        match.add_team('jackswagger')
-        match.add_team('kharma')
-        match.add_team('kane')
-        match.add_team('albertodelrio')
-        match.add_team('christian')
-        match.record_win('christian', 'pin')
+        match = self.event.add_match('kofikingston', 'rtruth', 'themiz',
+                                     'dolphziggler', 'johncena', 'jackswagger',
+                                     'kharma', 'kane', 'albertodelrio',
+                                     'christian', winner='christian',
+                                     win_type='pin')
         self.assertEqual(match.points(), {'christian': 5,
                                           'kofikingston': 0,
                                           'rtruth': 0,
@@ -130,71 +110,71 @@ class MatchTest(TestCase):
                          })
 
     def test_champ_scoring(self):
+        _give_belt('cmpunk', 'wwe')
+        _give_belt('christian', 'ic')
+        _give_belt('kofikingston', 'tag')
+        _give_belt('rtruth', 'tag')
+
         # champ doesn't get a bonus just for winning
-        match = Match.objects.create(event=self.wm29)
-        match.add_team('cmpunk', title='wwe')
-        match.add_team('reymysterio')
-        match.record_win('cmpunk', 'pin')
+        match = self.event.add_match('cmpunk', 'reymysterio', winner='cmpunk',
+                                      win_type='pin')
         self.assertEqual(match.points(), {'cmpunk': 2, 'reymysterio': 0})
 
+        # +2 bonus for beating a champ in a non-title match
+        match = self.event.add_match('cmpunk', 'reymysterio',
+                                     winner='reymysterio', win_type='pin')
+        self.assertEqual(match.points(), {'cmpunk': 0, 'reymysterio': 4})
+
         # defending wwe belt is worth +5
-        match = Match.objects.create(event=self.wm29, title_at_stake=True)
-        match.add_team('cmpunk', title='wwe')
-        match.add_team('reymysterio')
-        match.record_win('cmpunk', 'pin')
+        match = self.event.add_match('cmpunk', 'reymysterio', winner='cmpunk',
+                                      win_type='pin', title_at_stake=True)
         self.assertEqual(match.points(), {'cmpunk': 7, 'reymysterio': 0})
 
         # winning wwe belt
-        match = Match.objects.create(event=self.wm29, title_at_stake=True)
-        match.add_team('cmpunk', title='wwe')
-        match.add_team('reymysterio')
-        match.record_win('reymysterio', 'pin')
+        match = self.event.add_match('cmpunk', 'reymysterio',
+                                     winner='reymysterio', win_type='pin',
+                                     title_at_stake=True)
         self.assertEqual(match.points(), {'reymysterio': 22, 'cmpunk': 0})
 
         # defending other belt is worth +3
-        match = Match.objects.create(event=self.wm29, title_at_stake=True)
-        match.add_team('christian', title='ic')
-        match.add_team('codyrhodes')
-        match.record_win('christian', 'pin')
+        match = self.event.add_match('christian', 'codyrhodes',
+                                      winner='christian', win_type='pin',
+                                      title_at_stake=True)
         self.assertEqual(match.points(), {'christian': 5, 'codyrhodes': 0})
 
-        # winning other belt is worth +3
-        match = Match.objects.create(event=self.wm29, title_at_stake=True)
-        match.add_team('christian', title='ic')
-        match.add_team('codyrhodes')
-        match.record_win('codyrhodes', 'pin')
+        # winning other belt is worth +10
+        match = self.event.add_match('christian', 'codyrhodes',
+                                      winner='codyrhodes', win_type='pin',
+                                      title_at_stake=True)
         self.assertEqual(match.points(), {'codyrhodes': 12, 'christian': 0})
 
         # title non-defense (DQ/countout)
-        match = Match.objects.create(event=self.wm29, title_at_stake=True)
-        match.add_team('christian', title='ic')
-        match.add_team('codyrhodes')
-        match.record_win('codyrhodes', 'DQ')
+        match = self.event.add_match('christian', 'codyrhodes',
+                                      winner='codyrhodes', win_type='DQ',
+                                      title_at_stake=True)
         self.assertEqual(match.points(), {'codyrhodes': 1, 'christian': 1})
 
-        # +2 bonus for beating a champ in a non-title match
-        match = Match.objects.create(event=self.wm29)
-        match.add_team('cmpunk', title='wwe')
-        match.add_team('reymysterio')
-        match.record_win('reymysterio', 'pin')
-        self.assertEqual(match.points(), {'reymysterio': 4, 'cmpunk': 0})
-
         # no bonus in a tag match
-        match = Match.objects.create(event=self.wm29)
-        match.add_team('cmpunk', 'christian', title='wwe')
-        match.add_team('reymysterio', 'codyrhodes')
-        match.record_win('reymysterio', 'pin')
+        match = self.event.add_match(['cmpunk', 'christian'],
+                                     ['reymysterio', 'codyrhodes'],
+                                     winner='reymysterio', win_type='pin')
         self.assertEqual(match.points(), {'codyrhodes': 2, 'reymysterio': 3,
                                           'cmpunk': 0, 'christian': 0})
 
         # ...unless it is the tag title
-        match = Match.objects.create(event=self.wm29)
-        match.add_team('cmpunk', 'christian', title='tag')
-        match.add_team('reymysterio', 'codyrhodes')
-        match.record_win('reymysterio', 'pin')
-        self.assertEqual(match.points(), {'codyrhodes': 4, 'reymysterio': 5,
-                                          'cmpunk': 0, 'christian': 0})
+        match = self.event.add_match(['kofikingston', 'rtruth'],
+                                     ['reymysterio', 'sin-cara'],
+                                     winner='reymysterio', win_type='pin')
+        self.assertEqual(match.points(), {'sin-cara': 4, 'reymysterio': 5,
+                                          'kofikingston': 0, 'rtruth': 0})
 
+        # test tag title changing hands
+        match = self.event.add_match(['kofikingston', 'rtruth'],
+                                     ['reymysterio', 'sin-cara'],
+                                     winner='reymysterio', win_type='pin',
+                                     title_at_stake=True)
+        self.assertEqual(match.points(), {'sin-cara': 12, 'reymysterio': 13,
+                                          'kofikingston': 0, 'rtruth': 0})
 
 
 class LeagueTest(TestCase):
@@ -229,7 +209,7 @@ class LeagueTest(TestCase):
                                  win_type='pin')
         match2 = event.add_match('markhenry', ['santinomarella', 'mickfoley'],
                                  winner='mickfoley', win_type='pin')
-        Star.objects.filter(pk='codyrhodes').update(title='ic')
+        _give_belt('codyrhodes', 'ic')
         match3 = event.add_match('sin-cara', 'codyrhodes', title_at_stake=True,
                                  winner='sin-cara', win_type='pin')
         self.league.score_event(event)
