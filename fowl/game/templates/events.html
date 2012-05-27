@@ -15,18 +15,20 @@ match details:</p>
 
 <div class="accordion" id="accordion">
 
-{% regroup points by match.event as event_list %}
-{% for event in event_list %}
+{% for event in events.values %}
 
 <div class="accordion-group">
     <div class="accordion-heading">
         <a class="accordion-toggle event-title" data-toggle="collapse"
-            data-parent="#accordion" href="#event-{{event.grouper.id}}">
-            {{event.grouper.name}} - {{event.grouper.date}}
+            data-parent="#accordion" href="#event-{{event.id}}">
+            {{event.name}} - {{event.date}}
         </a>
+        {% for team,score in event.scores.iteritems %}
+        {{team}}: {{score}}
+        {% endfor %}
     </div>
 
-    <div id="event-{{event.grouper.id}}" class="accordion-body collapse in">
+    <div id="event-{{event.id}}" class="accordion-body collapse in">
     <div class="accordion-inner">
     <table class="table">
         <thead>
@@ -36,13 +38,12 @@ match details:</p>
           </tr>
         </thead>
         <tbody>
-        {% regroup event.list by match as match_list %}
-        {% for match in match_list %}
+            {% for match, tp_list in event.match_list.items %}
         <tr>
-            <td>{{match.grouper}}</td>
+            <td>{{match}}</td>
             <td>
                 <ul>
-                    {% for tp in match.list %}
+                    {% for tp in tp_list %}
                     {% if tp.points %}
                     <li> {{tp.team}} received {{tp.points}}
                         point{{tp.points|pluralize}} for {{tp.star}}
