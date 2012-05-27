@@ -93,14 +93,21 @@ class Event(models.Model):
         winner = kwargs.get('winner', None)
         win_type = kwargs.get('win_type', None)
         title_at_stake = kwargs.get('title_at_stake', False)
+        notes = kwargs.get('notes', '')
 
-        match = Match.objects.create(event=self, title_at_stake=title_at_stake)
+        match = Match.objects.create(event=self,
+                                     title_at_stake=title_at_stake,
+                                     notes=notes
+                                    )
         for team in teams:
             mt = MatchTeam.objects.create(match=match)
             if not isinstance(team, (list, tuple)):
                 team = [team]
             for member in team:
-                member = Star.objects.get(pk=member)
+                try:
+                    member = Star.objects.get(pk=member)
+                except Star.DoesNotExist:
+                    raise ValueError('invalid star pk {0}'.format(member))
                 if not mt.title and member.title:
                     # multiple titles?
                     mt.title = member.title
@@ -120,6 +127,7 @@ class Match(models.Model):
     winner = models.ForeignKey(Star, null=True)
     win_type = models.CharField(max_length=10, choices=WIN_TYPES)
     title_at_stake = models.BooleanField(default=False)
+    notes = models.TextField(blank=True, default='')
 
     def record_win(self, star, win_type):
         self.teams.filter(members__pk=star).update(victorious=True)
@@ -202,7 +210,11 @@ class Match(models.Model):
         return points
 
     def __unicode__(self):
-        return ' vs. '.join(str(t) for t in self.teams.all().prefetch_related('members'))
+        ret = ' vs. '.join(str(t) for t in
+                           self.teams.all().prefetch_related('members'))
+        if not self.winner_id:
+            ret += ' (no contest)'
+        return ret
 
 admin.site.register(Match)
 

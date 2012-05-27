@@ -34,7 +34,10 @@ PPVs, since the creation of this league.</p>
         <tbody>
             {% for match, tp_list in event.match_list.items %}
         <tr>
-            <td>{{match}}</td>
+            <td>
+                <p>{{match}}</p>
+                <p class="match-notes">{{match.notes}}</p>
+            </td>
             <td>
                 <ul>
                     {% for tp in tp_list %}
