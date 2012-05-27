@@ -69,12 +69,16 @@ class Team(models.Model):
     league = models.ForeignKey(League, related_name='teams')
     stars = models.ManyToManyField(Star, related_name='teams')
 
-    def add_star(self, **kwargs):
-        member = Star.objects.get(**kwargs)
+    def add_star(self, pk):
+        member = Star.objects.get(pk=pk)
         if member.drafted(self.league):
             raise ValueError('cannot add {0}, already drafted in {1}'.format(
                              member, self.league))
         self.stars.add(member)
+
+    def drop_star(self, pk):
+        member = Star.objects.get(pk=pk)
+        self.stars.remove(member)
 
     def __unicode__(self):
         return self.name

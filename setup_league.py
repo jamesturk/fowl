@@ -114,8 +114,35 @@ event.add_match(['johncena', 'sheamus'],
                 notes='Lumberjacks rush ring, no contest')
 league.score_event(event)
 
-# GM Punk
-# drop mark henry for sin cara
-# drop tensai for kane
-# COBRA!
-# drop titus o'neil and add christian
+# COBRA! draft actions
+cobra.drop_star('titusoneil')
+cobra.add_star('christian')
+# GM Punk draft actions
+gm_punk.drop_star('markhenry')
+gm_punk.add_star('sin-cara')
+gm_punk.drop_star('tensai')
+gm_punk.add_star('kane')
+
+# 5/25 Smackdown
+event = Event.objects.create(name='Smackdown', date='2012-05-25')
+event.add_match('christian', 'hunico', winner='christian',
+                win_type='pin')
+event.add_match(['titusoneil', 'darrenyoung'],
+                ['jimmyuso', 'jeyuso'],
+                winner='titusoneil', win_type='pin')
+Star.objects.create(name='Nobody One', pk='nobody1')
+Star.objects.create(name='Nobody Two', pk='nobody2')
+event.add_match('ryback',
+                ['nobody1', 'nobody2'], winner='ryback',
+                win_type='pin')
+event.add_match('santinomarella', 'ricardorodriguez',
+                winner='santinomarella', win_type='pin')
+event.add_match('sheamus', 'jackswagger', winner='sheamus',
+                win_type='pin')
+event.add_match('damien-sandow', 'yoshitatsu',
+                winner='damien-sandow', win_type='pin')
+# daniel bryan vs kane brawl
+event.add_match('randyorton', 'kane', 'albertodelrio',
+                winner='albertodelrio', win_type='pin')
+league.score_event(event)
+
