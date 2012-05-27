@@ -1,11 +1,13 @@
 from collections import defaultdict
 from django.db import models
-from django.contrib import admin
 from django.contrib.auth.models import User
+
+# these things are independent of the game
 
 WIN_TYPES = (('pin', 'pin'),
              ('DQ', 'DQ'),
              ('submission', 'submission'))
+
 TITLES = (('wwe', 'WWE'),
           ('heavyweight', 'Heavyweight'),
           ('ic', 'Intercontinental'),
@@ -19,8 +21,18 @@ class Star(models.Model):
     name = models.CharField(max_length=200)
     photo_url = models.URLField()
     division = models.CharField(max_length=100)
-    title = models.CharField(max_length=20, choices=TITLES)
+    title = models.CharField(max_length=20, choices=TITLES, null=True)
     active = models.BooleanField()
+
+    def win_title(self, title, tag_partner=None):
+        Star.objects.filter(title=title).update(title=None)
+        self.title = title
+        self.save()
+        if tag_partner:
+            if title != 'tag':
+                raise ValueError("can't have tag partner w/ non-tag belt")
+            tag_partner.title = title
+            tag_partner.save()
 
     def drafted(self, league):
         return self.teams.filter(league=league).count() >= 1
@@ -28,66 +40,6 @@ class Star(models.Model):
     def __unicode__(self):
         return self.name
 
-
-class StarAdmin(admin.ModelAdmin):
-    list_display = ('name', 'division', 'active')
-    list_filter = ('division', 'active')
-admin.site.register(Star, StarAdmin)
-
-
-class League(models.Model):
-    name = models.CharField(max_length=100)
-    raw_picks = models.IntegerField(default=3)
-    smackdown_picks = models.IntegerField(default=3)
-    diva_picks = models.IntegerField(default=2)
-    wildcard_picks = models.IntegerField(default=1)
-    oldtimer_picks = models.IntegerField(default=2)
-
-    def score_event(self, event):
-        ppv_bonus = 1 if event.name.lower() not in ('raw', 'smackdown') else 0
-        TeamPoints.objects.filter(match__event=event).delete()
-        for match in event.matches.all():
-            for star, points in match.points().iteritems():
-                try:
-                    team = self.teams.get(stars=star)
-                    TeamPoints.objects.create(points=points + ppv_bonus,
-                                              team=team,
-                                              star_id=star,
-                                              match=match)
-                except Team.DoesNotExist:
-                    pass
-
-    def __unicode__(self):
-        return self.name
-
-admin.site.register(League)
-
-
-class Team(models.Model):
-    name = models.CharField(max_length=100)
-    login = models.OneToOneField(User, related_name='team')
-    league = models.ForeignKey(League, related_name='teams')
-    stars = models.ManyToManyField(Star, related_name='teams')
-
-    def add_star(self, pk):
-        member = Star.objects.get(pk=pk)
-        if member.drafted(self.league):
-            raise ValueError('cannot add {0}, already drafted in {1}'.format(
-                             member, self.league))
-        self.stars.add(member)
-
-    def drop_star(self, pk):
-        member = Star.objects.get(pk=pk)
-        self.stars.remove(member)
-
-    def __unicode__(self):
-        return self.name
-
-class TeamAdmin(admin.ModelAdmin):
-    list_display = ('name', 'league')
-    list_filter = ('league',)
-
-admin.site.register(Team, TeamAdmin)
 
 class Event(models.Model):
     name = models.CharField(max_length=100)
@@ -124,7 +76,6 @@ class Event(models.Model):
     def __unicode__(self):
         return '{0} {1}'.format(self.name, self.date)
 
-admin.site.register(Event)
 
 class Match(models.Model):
     event = models.ForeignKey(Event, related_name='matches')
@@ -220,8 +171,6 @@ class Match(models.Model):
             ret += ' (no contest)'
         return ret
 
-admin.site.register(Match)
-
 class MatchTeam(models.Model):
     members = models.ManyToManyField(Star)
     match = models.ForeignKey(Match, related_name='teams')
@@ -235,6 +184,56 @@ class MatchTeam(models.Model):
         if self.victorious:
             ret += ' (v)'
         return ret
+
+
+# fantasy stuff
+
+class League(models.Model):
+    name = models.CharField(max_length=100)
+    raw_picks = models.IntegerField(default=3)
+    smackdown_picks = models.IntegerField(default=3)
+    diva_picks = models.IntegerField(default=2)
+    wildcard_picks = models.IntegerField(default=1)
+    oldtimer_picks = models.IntegerField(default=2)
+
+    def score_event(self, event):
+        ppv_bonus = 1 if event.name.lower() not in ('raw', 'smackdown') else 0
+        TeamPoints.objects.filter(match__event=event).delete()
+        for match in event.matches.all():
+            for star, points in match.points().iteritems():
+                try:
+                    team = self.teams.get(stars=star)
+                    TeamPoints.objects.create(points=points + ppv_bonus,
+                                              team=team,
+                                              star_id=star,
+                                              match=match)
+                except Team.DoesNotExist:
+                    pass
+
+    def __unicode__(self):
+        return self.name
+
+
+class Team(models.Model):
+    name = models.CharField(max_length=100)
+    login = models.OneToOneField(User, related_name='team')
+    league = models.ForeignKey(League, related_name='teams')
+    stars = models.ManyToManyField(Star, related_name='teams')
+
+    def add_star(self, pk):
+        member = Star.objects.get(pk=pk)
+        if member.drafted(self.league):
+            raise ValueError('cannot add {0}, already drafted in {1}'.format(
+                             member, self.league))
+        self.stars.add(member)
+
+    def drop_star(self, pk):
+        member = Star.objects.get(pk=pk)
+        self.stars.remove(member)
+
+    def __unicode__(self):
+        return self.name
+
 
 class TeamPoints(models.Model):
     points = models.IntegerField()

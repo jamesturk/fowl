@@ -4,7 +4,33 @@ from django.contrib.auth.models import User
 from .models import Match, Event, League, Team, TeamPoints, Star
 
 def _give_belt(star, belt):
-    Star.objects.filter(pk=star).update(title=belt)
+    Star.objects.get(pk=star).win_title(belt)
+
+class StarTest(TestCase):
+    def test_win_belt(self):
+        cmpunk = Star.objects.create(pk='cmpunk', name='CM Punk', title='wwe')
+        dbry = Star.objects.create(pk='danielbryan', name='Daniel Bryan')
+        kofi = Star.objects.create(pk='kofi', name='Kofi Kingston',
+                                   title='tag')
+        rtruth = Star.objects.create(pk='rtruth', name='R Truth', title='tag')
+        swagger = Star.objects.create(pk='swagger', name='Jack Swagger')
+        ziggler = Star.objects.create(pk='ziggler', name='Dolph Ziggler')
+
+        # belt win takes it away from original holder
+        self.assertEqual(Star.objects.get(pk='cmpunk').title, 'wwe')
+        dbry.win_title('wwe')
+        self.assertEqual(Star.objects.get(pk='cmpunk').title, None)
+        self.assertEqual(Star.objects.get(pk='danielbryan').title, 'wwe')
+
+        # tag belt win
+        self.assertEqual(Star.objects.get(pk='kofi').title, 'tag')
+        self.assertEqual(Star.objects.get(pk='rtruth').title, 'tag')
+        ziggler.win_title('tag', tag_partner=swagger)
+        self.assertEqual(Star.objects.get(pk='kofi').title, None)
+        self.assertEqual(Star.objects.get(pk='rtruth').title, None)
+        self.assertEqual(Star.objects.get(pk='ziggler').title, 'tag')
+        self.assertEqual(Star.objects.get(pk='swagger').title, 'tag')
+
 
 class MatchTest(TestCase):
     fixtures = ['testdata']
@@ -14,14 +40,14 @@ class MatchTest(TestCase):
 
     def test_basics(self):
         match = self.event.add_match('tripleh', 'undertaker')
-        self.assertEqual(unicode(match), 'Triple H vs. Undertaker')
+        self.assertEqual(unicode(match),
+                         'Triple H vs. Undertaker (no contest)')
         match.record_win('undertaker', 'pin')
         self.assertEqual(unicode(match), 'Triple H vs. Undertaker (v)')
 
         _give_belt('cmpunk', 'wwe')
-        match = self.event.add_match('cmpunk', 'reymysterio')
-        self.assertEqual(unicode(match), 'CM Punk (c) vs. Rey Mysterio')
-        match.record_win('cmpunk', 'pin')
+        match = self.event.add_match('cmpunk', 'reymysterio', winner='cmpunk',
+                                     win_type='pin')
         self.assertEqual(unicode(match), 'CM Punk (c) (v) vs. Rey Mysterio')
 
 
@@ -34,10 +60,10 @@ class MatchTest(TestCase):
         # fatal 4 way: 6 points
         match = self.event.add_match('randyorton', 'sheamus', 'albertodelrio',
                                      'chrisjericho', winner='sheamus',
-                                      win_type='pin')
+                                     win_type='pin')
         self.assertEqual(match.points(), {'sheamus': 6, 'randyorton': 0,
                                           'albertodelrio': 0, 'chrisjericho': 0}
-                                          )
+                        )
 
         # win stacked match: 1 point for team (bonuses can apply)
         match = self.event.add_match('santinomarella', ['markhenry', 'kane'],
@@ -75,7 +101,7 @@ class MatchTest(TestCase):
         match = self.event.add_match(['kofikingston', 'rtruth'],
                                      ['jackswagger', 'dolphziggler'],
                                      winner='dolphziggler',
-                                      win_type='submission')
+                                     win_type='submission')
         self.assertEqual(match.points(), {'jackswagger': 2,
                                           'dolphziggler': 4,
                                           'kofikingston': 0,
@@ -85,7 +111,7 @@ class MatchTest(TestCase):
         match = self.event.add_match(['kofikingston', 'rtruth'],
                                      ['jackswagger', 'dolphziggler'],
                                      winner='dolphziggler',
-                                      win_type='DQ')
+                                     win_type='DQ')
         self.assertEqual(match.points(), {'jackswagger': 1,
                                           'dolphziggler': 1,
                                           'kofikingston': 0,
@@ -107,7 +133,7 @@ class MatchTest(TestCase):
                                           'kharma': 0,
                                           'kane': 0,
                                           'albertodelrio': 0
-                         })
+                                         })
 
     def test_champ_scoring(self):
         _give_belt('cmpunk', 'wwe')
@@ -117,7 +143,7 @@ class MatchTest(TestCase):
 
         # champ doesn't get a bonus just for winning
         match = self.event.add_match('cmpunk', 'reymysterio', winner='cmpunk',
-                                      win_type='pin')
+                                     win_type='pin')
         self.assertEqual(match.points(), {'cmpunk': 2, 'reymysterio': 0})
 
         # +2 bonus for beating a champ in a non-title match
@@ -127,7 +153,7 @@ class MatchTest(TestCase):
 
         # defending wwe belt is worth +5
         match = self.event.add_match('cmpunk', 'reymysterio', winner='cmpunk',
-                                      win_type='pin', title_at_stake=True)
+                                     win_type='pin', title_at_stake=True)
         self.assertEqual(match.points(), {'cmpunk': 7, 'reymysterio': 0})
 
         # winning wwe belt
@@ -138,20 +164,20 @@ class MatchTest(TestCase):
 
         # defending other belt is worth +3
         match = self.event.add_match('christian', 'codyrhodes',
-                                      winner='christian', win_type='pin',
-                                      title_at_stake=True)
+                                     winner='christian', win_type='pin',
+                                     title_at_stake=True)
         self.assertEqual(match.points(), {'christian': 5, 'codyrhodes': 0})
 
         # winning other belt is worth +10
         match = self.event.add_match('christian', 'codyrhodes',
-                                      winner='codyrhodes', win_type='pin',
-                                      title_at_stake=True)
+                                     winner='codyrhodes', win_type='pin',
+                                     title_at_stake=True)
         self.assertEqual(match.points(), {'codyrhodes': 12, 'christian': 0})
 
         # title non-defense (DQ/countout)
         match = self.event.add_match('christian', 'codyrhodes',
-                                      winner='codyrhodes', win_type='DQ',
-                                      title_at_stake=True)
+                                     winner='codyrhodes', win_type='DQ',
+                                     title_at_stake=True)
         self.assertEqual(match.points(), {'codyrhodes': 1, 'christian': 1})
 
         # no bonus in a tag match
@@ -182,14 +208,14 @@ class LeagueTest(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user('me', 'test@example.com',
-                                              'password')
+                                             'password')
         self.user2 = User.objects.create_user('me2', 'test@example.com',
                                               'password')
         self.league = League.objects.create(name='FOWL')
         self.teddy = Team.objects.create(name='Team Teddy', login=self.user,
-                                   league=self.league)
+                                         league=self.league)
         self.johnny = Team.objects.create(name='Team Johnny', login=self.user2,
-                                    league=self.league)
+                                          league=self.league)
 
     def test_team_add_star(self):
         self.teddy.add_star(pk='reymysterio')
@@ -224,6 +250,9 @@ class LeagueTest(TestCase):
         # rename the event and rescore
         event.name = 'Wrestlemania'
         event.save()
+        # give cody rhodes his belt back for this one
+        _give_belt('codyrhodes', 'ic')
+
         self.league.score_event(event)
         # all should be one higher than before
         self.assertEqual(TeamPoints.objects.get(team=self.teddy, star__pk='reymysterio').points, 1)

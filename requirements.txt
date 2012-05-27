@@ -1,3 +1,4 @@
 Django
 lxml
 scrapelib
+django-debug-toolbar
