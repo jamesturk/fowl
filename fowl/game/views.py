@@ -1,5 +1,5 @@
 from collections import defaultdict
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from fowl.game.models import TeamPoints
 
 
@@ -18,6 +18,14 @@ def events(request):
         events[event_id].scores.setdefault(tp.team.name, 0)
         events[event_id].scores[tp.team.name] += tp.points
     return render(request, "events.html", {'events': events})
+
+def edit_event(request, event_id=None):
+    if event_id:
+        event = get_object_or_404(Event, pk=event_id)
+    else:
+        event = None
+    if request.method == 'GET':
+        return render(request, "edit_event.html", {"event": event})
 
 
 def stables(request):

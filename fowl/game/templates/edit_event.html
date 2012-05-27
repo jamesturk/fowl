@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block content %}
+<form class="well form-inline">
+    <label>Show Name</label>
+    <input type="text" class="span3" placeholder="RAW/Smackdown/PPV Name">
+    <label>Date</label>
+    <input type="text" class="span3" placeholder="YYYY-MM-DD">
+    <!-- match -->
+    <hr>
+    <h4>Match #1</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>&nbsp;</th>
+                <th>member #1</th>
+                <th>member #2</th>
+                <th>member #3</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th>team #1</th>
+                <td><input type="text" class="span3"></td>
+                <td><input type="text" class="span3"></td>
+                <td><input type="text" class="span3"></td>
+            </tr>
+            <tr>
+                <th>team #2</th>
+                <td><input type="text" class="span3"></td>
+                <td><input type="text" class="span3"></td>
+                <td><input type="text" class="span3"></td>
+            </tr>
+            <tr>
+                <th>team #3</th>
+                <td><input type="text" class="span3"></td>
+                <td><input type="text" class="span3"></td>
+                <td><input type="text" class="span3"></td>
+            </tr>
+        </tbody>
+    </table>
+    <label>Winner</label>
+    <input type="text" class="span3">
+    <label>Win Type</label>
+    <select>
+        <option>Pin</option>
+        <option>Submission</option>
+        <option>Disqualification</option>
+    </select>
+    <button class="btn">Add Team</button>
+    <button class="btn">Add Member</button>
+    <button class="btn btn-danger">Delete Match</button>
+    <!-- /match -->
+    <!-- match -->
+    <hr>
+    <h4>Match #2</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>&nbsp;</th>
+                <th>member #1</th>
+                <th>member #2</th>
+                <th>member #3</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th>team #1</th>
+                <td><input type="text" class="span3"></td>
+                <td><input type="text" class="span3"></td>
+                <td><input type="text" class="span3"></td>
+            </tr>
+            <tr>
+                <th>team #2</th>
+                <td><input type="text" class="span3"></td>
+                <td><input type="text" class="span3"></td>
+                <td><input type="text" class="span3"></td>
+            </tr>
+            <tr>
+                <th>team #3</th>
+                <td><input type="text" class="span3"></td>
+                <td><input type="text" class="span3"></td>
+                <td><input type="text" class="span3"></td>
+            </tr>
+        </tbody>
+    </table>
+    <label>Winner</label>
+    <input type="text" class="span3">
+    <label>Win Type</label>
+    <select>
+        <option>Pin</option>
+        <option>Submission</option>
+        <option>Disqualification</option>
+    </select>
+    <button class="btn">Add Team</button>
+    <button class="btn">Add Member</button>
+    <button class="btn btn-danger">Delete Match</button>
+    <!-- /match -->
+    <div>
+    <button class="btn">Add Match</button>
+    <button class="btn btn-primary">Save</button>
+    </div>
+</form>
+{% endblock %}
