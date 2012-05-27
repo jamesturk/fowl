@@ -5,105 +5,61 @@
 {% block content %}
 <header class="jumbotron subhead" id="overview">
 <h1>Events</h1>
-  <p class="lead">Every event that has taken place on RAW, Smackdown, and on PPVs, since the creation of this league.</p>
+<p class="lead">Every event that has taken place on RAW, Smackdown, and on
+PPVs, since the creation of this league.</p>
 </header>
 
 <h2>Events List:</h2>
-          <p>Yup, here are those events, collapsed in a nice way, click for match details:</p>
+<p>Yup, here are those events, collapsed in a nice way, click for
+match details:</p>
 
-          <div class="accordion" id="accordion2">
-            <div class="accordion-group">
-              <div class="accordion-heading">
-                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseOne">
-                  RAW 5/20/2012   3-9-3
-                </a>
-              </div>
-              <div id="collapseOne" class="accordion-body collapse in">
-                <div class="accordion-inner">
+<div class="accordion" id="accordion">
 
-                  <table class="table">
-                    <thead>
-                      <tr>
-                        <th>Event</th>
-                        <th>Points</th>
-                      </tr>
-                    </thead>
-                  <tbody>
-                    <tr>
-                      <td>Rey Mysterio vs Sin Cara</td>
-                      <td>
-                        <ul>
-                          <li>GM Punk gets 2 points for Sin Cara victory</li>
-                          <li>COBRA! gets 0 points for Sin Cara victory</li>
-                        </ul>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>Big Show & Kane vs Kaval</td>
-                      <td>
-                        <ul>
-                          <li>COBRA! gets 2 points for Big Show Victory</li>
-                          <li>GM Punk gets 2 points for Kane victory</li>
-                          <li>COBRA! & GM Punk get -2 points for murder</li>
-                        </ul>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+{% regroup points by match.event as event_list %}
+{% for event in event_list %}
 
-                </div>
-              </div>
-            </div>
-            <div class="accordion-group">
-              <div class="accordion-heading">
-                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseTwo">
-                  Smackdown 5/25/2012   0-4-2
-                </a>
-              </div>
-              <div id="collapseTwo" class="accordion-body collapse">
-                <div class="accordion-inner">
-                  <table class="table">
-                    <thead>
-                      <tr>
-                        <th>Event</th>
-                        <th>Points</th>
-                      </tr>
-                    </thead>
-                  <tbody>
-                    <tr>
-                      <td>Cody Rhodes vs John Cena</td>
-                      <td>
-                        <ul>
-                          <li>GM Punk gets 2 points for Cody Rhodes victory</li>
-                          <li>I'm AWEsome gets 0 points for Cody Rhodes victory</li>
-                        </ul>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>The Miz vs Santino</td>
-                      <td>
-                        <ul>
-                          <li>COBRA! gets 2 points for Santino Victory</li>
-                          <li>COBRA! gets 4 points for US Championship title defense</li>
-                        </ul>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-                </div>
-              </div>
-            </div>
-            <div class="accordion-group">
-              <div class="accordion-heading">
-                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseThree">
-                  Summerslam 2012  ?-?-?
-                </a>
-              </div>
-              <div id="collapseThree" class="accordion-body collapse">
-                <div class="accordion-inner">
-                  Didn't want to get presumptious with the scores on this one
-                </div>
-              </div>
-            </div>
-          </div>
+<div class="accordion-group">
+    <div class="accordion-heading">
+        <a class="accordion-toggle event-title" data-toggle="collapse"
+            data-parent="#accordion" href="#event-{{event.grouper.id}}">
+            {{event.grouper.name}} - {{event.grouper.date}}
+        </a>
+    </div>
+
+    <div id="event-{{event.grouper.id}}" class="accordion-body collapse in">
+    <div class="accordion-inner">
+    <table class="table">
+        <thead>
+          <tr>
+            <th>Event</th>
+            <th>Scoring</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% regroup event.list by match as match_list %}
+        {% for match in match_list %}
+        <tr>
+            <td>{{match.grouper}}</td>
+            <td>
+                <ul>
+                    {% for tp in match.list %}
+                    {% if tp.points %}
+                    <li> {{tp.team}} received {{tp.points}}
+                        point{{tp.points|pluralize}} for {{tp.star}}
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+                </ul>
+            </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    </div>
+    </div>
+</div>
+
+{% endfor %}
+</div>
 {% endblock %}

@@ -202,7 +202,7 @@ class Match(models.Model):
         return points
 
     def __unicode__(self):
-        return ' vs. '.join(str(t) for t in self.teams.all())
+        return ' vs. '.join(str(t) for t in self.teams.all().prefetch_related('members'))
 
 admin.site.register(Match)
 
@@ -227,5 +227,5 @@ class TeamPoints(models.Model):
     match = models.ForeignKey(Match)
 
     def __unicode__(self):
-        return "{0} recieved {1} points for {2}'s performance in {3}".format(
+        return "{0} received {1} points for {2}'s performance in {3}".format(
                 self.team, self.points, self.star, self.match)
