@@ -46,6 +46,7 @@
             <ul class="nav">
                 <li {% if view == "league" %}class="active"{%endif%}><a href="{% url league 1 %}">League</a></li>
                 <li {% if view == "events" %}class="active"{%endif%}><a href="{% url events 1 %}">Events</a></li>
+                <li {% if view == "roster" %}class="active"{%endif%}><a href="{% url roster %}">Roster</a></li>
             </ul>
           </div><!--/.nav-collapse -->
         </div>
