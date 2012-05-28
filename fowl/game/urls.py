@@ -1,7 +1,9 @@
 from django.conf.urls import patterns, include, url
 
 urlpatterns = patterns('',
-    url(r'^events/$', 'fowl.game.views.events'),
-    url(r'^edit_event/$', 'fowl.game.views.edit_event'),
-    url(r'^stables/$', 'fowl.game.views.stables'),
+    url(r'events/(?P<league_id>\d+)/$', 'fowl.game.views.events',
+        name='events'),
+    url(r'league/(?P<league_id>\d+)/$', 'fowl.game.views.league',
+        name='league'),
+    url(r'^edit_event/$', 'fowl.game.views.edit_event', name='edit_event'),
 )

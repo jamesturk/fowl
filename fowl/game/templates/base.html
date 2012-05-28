@@ -40,11 +40,8 @@
           <a class="brand" href="#">FOWL</a>
           <div class="nav-collapse">
             <ul class="nav">
-              <li><a href="index.html">Home</a></li>
-              <li class="active"><a href="events.html">Events</a></li>
-              <li><a href="stables.html">Stables</a></li>
-              <li><a href="roster.html">Roster</a></li>
-              <li><a href="stars.html">Star Pages</a></li>
+                <li {% if view == "league" %}class="active"{%endif%}><a href="{% url league 1 %}">League</a></li>
+                <li {% if view == "events" %}class="active"{%endif%}><a href="{% url events 1 %}">Events</a></li>
             </ul>
           </div><!--/.nav-collapse -->
         </div>

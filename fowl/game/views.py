@@ -4,10 +4,10 @@ from django.shortcuts import render, get_object_or_404
 from fowl.game.models import Team, TeamPoints
 
 
-def events(request):
+def events(request, league_id):
     events = {}
-    points = TeamPoints.objects.filter().order_by('match',
-                                                  'team').select_related()
+    points = TeamPoints.objects.filter(team__league_id=league_id).order_by(
+        'match', 'team').select_related()
     for tp in points:
         event_id = tp.match.event_id
         if event_id not in events:
@@ -18,7 +18,8 @@ def events(request):
                                                ).append(tp)
         events[event_id].scores.setdefault(tp.team.name, 0)
         events[event_id].scores[tp.team.name] += tp.points
-    return render(request, "events.html", {'events': events})
+    events = sorted(events.values(), key=lambda x: x.date, reverse=True)
+    return render(request, "events.html", {'events': events, 'view': 'events'})
 
 def edit_event(request, event_id=None):
     if event_id:
@@ -29,10 +30,14 @@ def edit_event(request, event_id=None):
         return render(request, "edit_event.html", {"event": event})
 
 
-def stables(request):
-    context = { 'belts': ['ic', 'us', 'heavyweight', 'wwe']
-              }
-    teams = list(Team.objects.all().prefetch_related('stars'))
+def league(request, league_id):
+    context = {
+        'view': 'league',
+        'belts': ['ic', 'us', 'heavyweight', 'wwe']
+    }
+    teams = list(Team.objects.filter(league__id=league_id)
+                 .prefetch_related('stars'))
     context['teams'] = teams
-    context['star_sets'] = izip_longest(*(team.stars.all().order_by("division") for team in teams))
+    context['star_sets'] = izip_longest(*(team.stars.all().order_by("division")
+                                          for team in teams))
     return render(request, "stables.html", context)
