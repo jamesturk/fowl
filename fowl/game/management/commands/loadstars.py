@@ -29,5 +29,4 @@ class Command(NoArgsCommand):
             photo_url = url + div.xpath('a/img/@data-fullsrc')[0]
 
             star = Star.objects.create(id=id, name=name, division=division,
-                                       photo_url=photo_url,
-                                       active=(division != 'other'))
+                                       photo_url=photo_url)
