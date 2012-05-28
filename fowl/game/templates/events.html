@@ -15,14 +15,16 @@ PPVs, since the creation of this league.</p>
     <div class="accordion-heading">
         <a class="accordion-toggle event-title" data-toggle="collapse"
             data-parent="#accordion" href="#event-{{event.id}}">
-            {{event.name}} - {{event.date}}
+                {{event.name}} - {{event.date}}
         </a>
-        {% for team,score in event.scores.iteritems %}
-        {{team}}: {{score}}
-        {% endfor %}
+        <span class="score-container">
+            {% for team,score in event.scores.iteritems %}
+                <span class="label" style="background-color: #00aa00;">{{team}}: {{score}}</span>
+            {% endfor %}
+        </span>
     </div>
 
-    <div id="event-{{event.id}}" class="accordion-body collapse in">
+    <div id="event-{{event.id}}" class="accordion-body collapse">
     <div class="accordion-inner">
     <table class="table">
         <thead>
