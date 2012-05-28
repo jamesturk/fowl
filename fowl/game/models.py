@@ -49,6 +49,24 @@ class Event(models.Model):
     name = models.CharField(max_length=100)
     date = models.DateField()
 
+    def to_dict(self):
+        d = {'name': self.name, 'date': self.date,
+             'matches': [m.to_dict() for m in self.matches.all()]
+            }
+        return d
+
+    @staticmethod
+    def from_dict(d):
+        event = Event.objects.create(name=d['name'], date=d['date'])
+        for match in d['matches']:
+            event.add_match(*match['teams'],
+                            winner=match['winner'],
+                            outcome=match['outcome'],
+                            title_at_stake=match['title_at_stake'],
+                            notes=match['notes'])
+        return event
+
+
     def add_match(self, *teams, **kwargs):
         winner = kwargs.get('winner', None)
         outcome = kwargs.get('outcome', '')
@@ -90,6 +108,15 @@ class Match(models.Model):
     outcome = models.CharField(max_length=10, choices=OUTCOMES)
     title_at_stake = models.CharField(max_length=50, choices=TITLES, null=True)
     notes = models.TextField(blank=True, default='')
+
+    def to_dict(self):
+        d = {'winner': self.winner_id,
+             'outcome': self.outcome,
+             'title_at_stake': self.title_at_stake,
+             'notes': self.notes}
+        d['teams'] = [[m.id for m in team.members.all()]
+                      for team in self.teams.all()]
+        return d
 
     def record_win(self, star, outcome):
         team = self.teams.get(members__pk=star)

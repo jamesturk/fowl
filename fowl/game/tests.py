@@ -1,3 +1,4 @@
+import datetime
 from django.test import TestCase
 from django.contrib.auth.models import User
 from .models import Event, League, Team, TeamPoints, Star
@@ -32,6 +33,53 @@ class StarTest(TestCase):
         self.assertEqual(Star.objects.get(pk='ziggler').title, 'tag')
         self.assertEqual(Star.objects.get(pk='swagger').title, 'tag')
 
+class EventTest(TestCase):
+    maxDiff = None
+    fixtures = ['testdata']
+
+    # add_match isn't explicity tested, should it be?
+
+    def test_to_dict(self):
+        event = Event.objects.create(name='RAW',
+                                     date='2012-01-01')
+        event.add_match('jimross', 'jerrylawler',
+                        winner='jimross', outcome='submission')
+        event = Event.objects.get()
+        expected = {'name': 'RAW', 'date': datetime.date(2012,1,1),
+                    'matches': [
+                        {'teams': [[u'jimross'],[u'jerrylawler']],
+                         'winner': u'jimross',
+                         'outcome': u'submission',
+                         'notes': '',
+                         'title_at_stake': None,
+                        }
+                    ]
+                   }
+        self.assertEqual(event.to_dict(), expected)
+
+    def test_from_dict(self):
+        edict = {'name': 'RAW', 'date': datetime.date(2012,1,1),
+                    'matches': [
+                        {'teams': [[u'jimross'],[u'jerrylawler']],
+                         'winner': u'jimross',
+                         'outcome': u'submission',
+                         'notes': '',
+                         'title_at_stake': None,
+                        }
+                   ]
+                }
+        event = Event.from_dict(edict)
+        self.assertEqual(event.name, 'RAW')
+        self.assertEqual(event.date, datetime.date(2012,1,1))
+        match_one = event.matches.all()[0]
+        self.assertEqual([[s.id for s in team.members.all()]
+                          for team in match_one.teams.all()],
+                         [[u'jimross'], [u'jerrylawler']])
+        self.assertEqual(match_one.winner_id, 'jimross')
+        self.assertEqual(match_one.outcome, 'submission')
+        self.assertEqual(match_one.notes, '')
+        self.assertEqual(match_one.title_at_stake, None)
+
 
 class MatchTest(TestCase):
     fixtures = ['testdata']
@@ -40,7 +88,7 @@ class MatchTest(TestCase):
         self.event = Event.objects.create(name='Wrestlemania 29',
                                           date='2012-04-01')
 
-    def test_basics(self):
+    def test_display(self):
         match = self.event.add_match('tripleh', 'undertaker')
         self.assertEqual(unicode(match),
                          'Triple H vs. Undertaker (no contest)')
@@ -51,6 +99,19 @@ class MatchTest(TestCase):
         match = self.event.add_match('cmpunk', 'reymysterio', winner='cmpunk',
                                      outcome='normal')
         self.assertEqual(unicode(match), 'CM Punk (c) (v) vs. Rey Mysterio')
+
+    def test_to_dict(self):
+        match = self.event.add_match('jimross', 'jerrylawler', 'michaelcole',
+                                     winner='jimross', outcome='submission',
+                                     notes='announcer beat down')
+        expected = {'teams':
+                        [['jimross'],['jerrylawler'],['michaelcole']],
+                    'winner': 'jimross',
+                    'outcome': 'submission',
+                    'title_at_stake': None,
+                    'notes': 'announcer beat down'}
+        self.assertEqual(match.to_dict(), expected)
+
 
     def test_do_title_change(self):
         # title to punk
