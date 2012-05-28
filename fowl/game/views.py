@@ -29,4 +29,5 @@ def edit_event(request, event_id=None):
 
 
 def stables(request):
-    return render(request, "stables.html")
+    context = {'belts':['ic', 'us', 'heavyweight', 'wwe']}
+    return render(request, "stables.html", context)

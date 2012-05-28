@@ -10,11 +10,15 @@
 <br><br>
 <h2>Belts</h2>
 <br><br>
-<div class="row-fluid">
+<div class="row-fluid"> 
+  <!-- begin belt block -->
+  {% for belt in belts %}
   <div class="span3">
     <table class="table">
       <thead>
-        <tr> <img src="{% static "images/ic.png" %}"></tr>
+        <tr>
+          <td class="belt-img" colspan="2"><img src="{% get_static_prefix %}images/{{belt}}.png"></td>
+        </tr>
       </thead>
       <tody>
         <tr>
@@ -32,78 +36,16 @@
       </tbody>
     </table>
   </div>
-  <div class="span3">
-    <table class="table">
-      <thead>
-        <tr> <img src="{% static "images/us.png" %}"></tr>
-      </thead>
-      <tody>
-        <tr>
-          <td>Title holder:</td>
-          <td>I'm AWEsome</td>
-        </tr>
-        <tr>
-          <td>Held Since:</td>
-          <td>5/18/2012</td>
-        </tr>
-        <tr>
-          <td>Reign:</td>
-          <td>8</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="span3">
-    <table class="table">
-      <thead>
-        <tr> <img src="{% static "images/heavyweight.png" %}"></tr>
-      </thead>
-      <tody>
-        <tr>
-          <td>Title holder:</td>
-          <td>I'm AWEsome</td>
-        </tr>
-        <tr>
-          <td>Held Since:</td>
-          <td>5/18/2012</td>
-        </tr>
-        <tr>
-          <td>Reign:</td>
-          <td>8</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-    <div class="span3">
-    <table class="table">
-      <thead>
-        <tr> <img src="{% static "images/wwe.png" %}"></tr>
-      </thead>
-      <tody>
-        <tr>
-          <td>Title holder:</td>
-          <td>I'm AWEsome</td>
-        </tr>
-        <tr>
-          <td>Held Since:</td>
-          <td>5/18/2012</td>
-        </tr>
-        <tr>
-          <td>Reign:</td>
-          <td>8</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
+  {% endfor %}
+  <!-- end belt block -->
 
+</div>
 
 <br><br><br>
 <h2> Stables </h2>
 <table class="table">
   <thead>
     <tr>
-      <th> </th>
       <th>GM Punk</th>
       <th>I'm AWEsome</th>
       <th>COBRA!</th>
@@ -111,31 +53,26 @@
   </thead>
   <tbody>
     <tr>
-      <td>Raw 1</td>
       <td>CM Punk</td>
       <td>Brodus Clay</td>
       <td>Santino</td>
     </tr>
     <tr>
-      <td>Raw 2</td>
       <td>Kane</td>
       <td>John Cena</td>
       <td>Dolph Ziggler</td>
     </tr>
     <tr>
-      <td>Raw 3</td>
       <td>R Truth</td>
       <td>Chris Jericho</td>
       <td>Kofi Kingston</td>
     </tr>
     <tr>
-      <td>Smackdown 1</td>
       <td>Cody Rhodes</td>
       <td>Sheamus</td>
       <td>Alberto del Rio</td>
     </tr>
     <tr>
-      <td>Smackdown 2</td>
       <td>Sin Cara</td>
       <td>Daniel Bryan</td>
       <td>Randy Orton</td>
