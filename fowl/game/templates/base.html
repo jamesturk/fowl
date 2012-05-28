@@ -20,6 +20,7 @@
       .divas { float: right; margin-right:11em; background-color: #900099;} 
       .smackdown { float: right; margin-right:8em; background-color: #003090;}
       .score-container { float: right; margin-right:20em;}
+      .nav { font-size: 120%; padding: 4px 0px;}
     </style>
     <link href="{% static "assets/css/bootstrap-responsive.css" %}" rel="stylesheet">
 
@@ -39,7 +40,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-          <a class="brand" href="#">FOWL</a>
+          <a class="brand" href="#"><img src="{% static "images/duck.png" %}" width="30" height="30"> </a>
           <div class="nav-collapse">
             <ul class="nav">
                 <li {% if view == "league" %}class="active"{%endif%}><a href="{% url league 1 %}">League</a></li>
