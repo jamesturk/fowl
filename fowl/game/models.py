@@ -27,7 +27,10 @@ class Star(models.Model):
     photo_url = models.URLField()
     division = models.CharField(max_length=100)
     title = models.CharField(max_length=20, choices=TITLES, null=True)
-    active = models.BooleanField()
+
+    @property
+    def active(self):
+        return self.division != 'other'
 
     def win_title(self, title, tag_partner=None):
         Star.objects.filter(title=title).update(title=None)

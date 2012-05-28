@@ -3,8 +3,8 @@ from django.contrib import admin
 from .models import Star, Match, Event, League, Team
 
 class StarAdmin(admin.ModelAdmin):
-    list_display = ('name', 'division', 'active')
-    list_filter = ('division', 'active')
+    list_display = ('name', 'division')
+    list_filter = ('division',)
 
 admin.site.register(Star, StarAdmin)
 admin.site.register(Match)
