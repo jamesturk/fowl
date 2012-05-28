@@ -34,5 +34,5 @@ def stables(request):
               }
     teams = list(Team.objects.all().prefetch_related('stars'))
     context['teams'] = teams
-    context['star_sets'] = izip_longest(*(team.stars.all() for team in teams))
+    context['star_sets'] = izip_longest(*(team.stars.all().order_by("division") for team in teams))
     return render(request, "stables.html", context)

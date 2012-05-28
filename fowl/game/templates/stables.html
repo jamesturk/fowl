@@ -9,7 +9,7 @@
 </header>
 <br><br>
 <h2>Belts</h2>
-<br><br>
+
 <div class="row-fluid"> 
   <!-- begin belt block -->
   {% for belt in belts %}
@@ -43,40 +43,23 @@
 
 <br><br><br>
 <h2> Stables </h2>
+<br><br>
 <table class="table">
   <thead>
     <tr>
-      <th>GM Punk</th>
-      <th>I'm AWEsome</th>
-      <th>COBRA!</th>
+      {% for team in teams %}
+      <th>{{team}}</th>
+      {% endfor %}
     </tr>
   </thead>
   <tbody>
+   {% for star_set in star_sets %}
     <tr>
-      <td>CM Punk</td>
-      <td>Brodus Clay</td>
-      <td>Santino</td>
+        {% for star in star_set %}
+      <td>{{star}}<span class="label {{star.division}}">{{star.division}}</span></td>
+        {% endfor %}
     </tr>
-    <tr>
-      <td>Kane</td>
-      <td>John Cena</td>
-      <td>Dolph Ziggler</td>
-    </tr>
-    <tr>
-      <td>R Truth</td>
-      <td>Chris Jericho</td>
-      <td>Kofi Kingston</td>
-    </tr>
-    <tr>
-      <td>Cody Rhodes</td>
-      <td>Sheamus</td>
-      <td>Alberto del Rio</td>
-    </tr>
-    <tr>
-      <td>Sin Cara</td>
-      <td>Daniel Bryan</td>
-      <td>Randy Orton</td>
-    </tr>
+    {% endfor %}
   </tbody>
 </table>
 
