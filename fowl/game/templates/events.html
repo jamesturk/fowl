@@ -19,7 +19,7 @@ PPVs, since the creation of this league.</p>
         </a>
         <span class="score-container">
             {% for team,score in event.scores.iteritems %}
-                <span class="label" style="background-color: #00aa00;">{{team}}: {{score}}</span>
+                <span class="label" style="background-color: {{team.color}};">{{team}}: {{score}}</span>
             {% endfor %}
         </span>
     </div>

@@ -246,6 +246,7 @@ class League(models.Model):
 
 class Team(models.Model):
     name = models.CharField(max_length=100)
+    color = models.CharField(max_length=50)
     login = models.OneToOneField(User, related_name='team')
     league = models.ForeignKey(League, related_name='teams')
     stars = models.ManyToManyField(Star, related_name='teams')

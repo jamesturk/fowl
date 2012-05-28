@@ -16,8 +16,8 @@ def events(request, league_id):
             events[event_id].match_list = {}
         events[event_id].match_list.setdefault(tp.match, []
                                                ).append(tp)
-        events[event_id].scores.setdefault(tp.team.name, 0)
-        events[event_id].scores[tp.team.name] += tp.points
+        events[event_id].scores.setdefault(tp.team, 0)
+        events[event_id].scores[tp.team] += tp.points
     events = sorted(events.values(), key=lambda x: x.date, reverse=True)
     return render(request, "events.html", {'events': events, 'view': 'events'})
 
