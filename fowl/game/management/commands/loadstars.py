@@ -4,6 +4,7 @@ import lxml.html
 
 from ...models import Star
 
+
 class Command(NoArgsCommand):
 
     def handle_noargs(self, **options):
@@ -28,5 +29,5 @@ class Command(NoArgsCommand):
             id = url.rsplit('/', 1)[-1]
             photo_url = url + div.xpath('a/img/@data-fullsrc')[0]
 
-            star = Star.objects.create(id=id, name=name, division=division,
-                                       photo_url=photo_url)
+            Star.objects.create(id=id, name=name, division=division,
+                                photo_url=photo_url)

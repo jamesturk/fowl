@@ -1,18 +1,19 @@
 from django.test import TestCase
-from django.core.management import call_command
 from django.contrib.auth.models import User
-from .models import Match, Event, League, Team, TeamPoints, Star
+from .models import Event, League, Team, TeamPoints, Star
+
 
 def _give_belt(star, belt):
     Star.objects.get(pk=star).win_title(belt)
 
+
 class StarTest(TestCase):
     def test_win_title(self):
-        cmpunk = Star.objects.create(pk='cmpunk', name='CM Punk', title='wwe')
+        Star.objects.create(pk='cmpunk', name='CM Punk', title='wwe')
         dbry = Star.objects.create(pk='danielbryan', name='Daniel Bryan')
-        kofi = Star.objects.create(pk='kofi', name='Kofi Kingston',
+        Star.objects.create(pk='kofi', name='Kofi Kingston',
                                    title='tag')
-        rtruth = Star.objects.create(pk='rtruth', name='R Truth', title='tag')
+        Star.objects.create(pk='rtruth', name='R Truth', title='tag')
         swagger = Star.objects.create(pk='swagger', name='Jack Swagger')
         ziggler = Star.objects.create(pk='ziggler', name='Dolph Ziggler')
 
@@ -36,7 +37,8 @@ class MatchTest(TestCase):
     fixtures = ['testdata']
 
     def setUp(self):
-        self.event = Event.objects.create(name='Wrestlemania 29', date='2012-04-01')
+        self.event = Event.objects.create(name='Wrestlemania 29',
+                                          date='2012-04-01')
 
     def test_basics(self):
         match = self.event.add_match('tripleh', 'undertaker')
@@ -49,7 +51,6 @@ class MatchTest(TestCase):
         match = self.event.add_match('cmpunk', 'reymysterio', winner='cmpunk',
                                      outcome='normal')
         self.assertEqual(unicode(match), 'CM Punk (c) (v) vs. Rey Mysterio')
-
 
     def test_do_title_change(self):
         # title to punk
@@ -96,8 +97,7 @@ class MatchTest(TestCase):
                                      'chrisjericho', winner='sheamus',
                                      outcome='normal')
         self.assertEqual(match.points(), {'sheamus': 6, 'randyorton': 0,
-                                          'albertodelrio': 0, 'chrisjericho': 0}
-                        )
+                                      'albertodelrio': 0, 'chrisjericho': 0})
 
         # win stacked match: 1 point for team (bonuses can apply)
         match = self.event.add_match('santinomarella', ['markhenry', 'kane'],
@@ -292,11 +292,16 @@ class LeagueTest(TestCase):
         self.league.score_event(event)
 
         # check TeamPoints objects
-        self.assertEqual(TeamPoints.objects.get(team=self.teddy, star__pk='reymysterio').points, 0)
-        self.assertEqual(TeamPoints.objects.get(team=self.teddy, star__pk='santinomarella').points, 1)
-        self.assertEqual(TeamPoints.objects.get(team=self.johnny, match=match1, star__pk='sin-cara').points, 2)
-        self.assertEqual(TeamPoints.objects.get(team=self.johnny, match=match3, star__pk='sin-cara').points, 12)
-        self.assertEqual(TeamPoints.objects.get(team=self.johnny, star__pk='markhenry').points, 0)
+        self.assertEqual(TeamPoints.objects.get(team=self.teddy,
+                                star__pk='reymysterio').points, 0)
+        self.assertEqual(TeamPoints.objects.get(team=self.teddy,
+                                star__pk='santinomarella').points, 1)
+        self.assertEqual(TeamPoints.objects.get(team=self.johnny,
+                                match=match1, star__pk='sin-cara').points, 2)
+        self.assertEqual(TeamPoints.objects.get(team=self.johnny,
+                                match=match3, star__pk='sin-cara').points, 12)
+        self.assertEqual(TeamPoints.objects.get(team=self.johnny,
+                                star__pk='markhenry').points, 0)
 
         # rename the event and rescore
         event.name = 'Wrestlemania'
@@ -306,8 +311,13 @@ class LeagueTest(TestCase):
 
         self.league.score_event(event)
         # all should be one higher than before
-        self.assertEqual(TeamPoints.objects.get(team=self.teddy, star__pk='reymysterio').points, 1)
-        self.assertEqual(TeamPoints.objects.get(team=self.teddy, star__pk='santinomarella').points, 2)
-        self.assertEqual(TeamPoints.objects.get(team=self.johnny, match=match1, star__pk='sin-cara').points, 3)
-        self.assertEqual(TeamPoints.objects.get(team=self.johnny, match=match3, star__pk='sin-cara').points, 13)
-        self.assertEqual(TeamPoints.objects.get(team=self.johnny, star__pk='markhenry').points, 1)
+        self.assertEqual(TeamPoints.objects.get(team=self.teddy,
+                                star__pk='reymysterio').points, 1)
+        self.assertEqual(TeamPoints.objects.get(team=self.teddy,
+                                star__pk='santinomarella').points, 2)
+        self.assertEqual(TeamPoints.objects.get(team=self.johnny,
+                                match=match1, star__pk='sin-cara').points, 3)
+        self.assertEqual(TeamPoints.objects.get(team=self.johnny,
+                                match=match3, star__pk='sin-cara').points, 13)
+        self.assertEqual(TeamPoints.objects.get(team=self.johnny,
+                                star__pk='markhenry').points, 1)

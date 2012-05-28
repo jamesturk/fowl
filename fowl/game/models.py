@@ -1,4 +1,3 @@
-from collections import defaultdict
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -19,6 +18,7 @@ TITLES = (('wwe', 'WWE'),
           ('tag', 'Tag Team'),
           ('diva', 'Divas'),
          )
+
 
 class Star(models.Model):
     id = models.CharField(max_length=100, primary_key=True)
@@ -171,7 +171,8 @@ class Match(models.Model):
                             points[w.id] += 10
                     else:
                         # defense by DQ
-                        for star in title_teams[self.title_at_stake].members.all():
+                        for star in title_teams[self.title_at_stake
+                                               ].members.all():
                             points[star.id] += 1
                 else:
                     # look over titles in match, to score a title-nondefense
@@ -199,6 +200,7 @@ class Match(models.Model):
         if not self.winner_id:
             ret += ' (no contest)'
         return ret
+
 
 class MatchTeam(models.Model):
     members = models.ManyToManyField(Star)
