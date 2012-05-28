@@ -1,7 +1,7 @@
 from collections import defaultdict
 from itertools import izip_longest
 from django.shortcuts import render, get_object_or_404
-from fowl.game.models import Team, TeamPoints
+from fowl.game.models import Team, TeamPoints, Star
 
 
 def events(request, league_id):
@@ -29,7 +29,6 @@ def edit_event(request, event_id=None):
     if request.method == 'GET':
         return render(request, "edit_event.html", {"event": event})
 
-
 def league(request, league_id):
     context = {
         'view': 'league',
@@ -41,3 +40,9 @@ def league(request, league_id):
     context['star_sets'] = izip_longest(*(team.stars.all().order_by("division")
                                           for team in teams))
     return render(request, "stables.html", context)
+
+def roster(request):
+    context = {
+        'stars': Star.objects.all()
+    }
+    return render(request, "roster.html", context)

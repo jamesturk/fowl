@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %} Roster {% endblock %}
+
+{% block content %}
+<header class="jumbotron subhead" id="overview">
+<h1>Roster</h1>
+  <p class="lead">The WWE Roster</p>
+</header>
+<br><br><br>
+<table class="table">
+  <thead>
+    <tr>
+      <th>Stars</th>
+    </tr>
+  </thead>
+  <tbody>
+   {% for star in stars %}
+    <tr>
+      <td>{{star}}<span class="label {{star.division}}">{{star.division}}</span></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}
