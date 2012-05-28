@@ -5,19 +5,21 @@
     <meta charset="utf-8">
     <title>{% block title %} {% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <link rel="shortcut icon" href="{% static "favicon.ico" %}" />
     <link href="{% static "css/bootstrap.css" %}" rel="stylesheet">
     <style type="text/css">
       body {
         padding-top: 60px;
         padding-bottom: 40px;
       }
-      .event-title { font-size: 125%; }
+      .accordion-heading .event-title { font-size: 125%; display: inline;}
+      .accordion-heading { padding: 10px 0px;}
       .match-notes { font-size: 80%; color: #999999; }
       .belt-img img { display: block; margin-left: auto; margin-right: auto }
       .raw { float: right; margin-right:12em; background-color: #900000;}
       .divas { float: right; margin-right:11em; background-color: #900099;} 
       .smackdown { float: right; margin-right:8em; background-color: #003090;}
+      .score-container { float: right; margin-right:20em;}
     </style>
     <link href="{% static "assets/css/bootstrap-responsive.css" %}" rel="stylesheet">
 
