@@ -19,6 +19,7 @@
       .raw { float: right; margin-right:12em; background-color: #900000;}
       .divas { float: right; margin-right:11em; background-color: #900099;} 
       .smackdown { float: right; margin-right:8em; background-color: #003090;}
+      .other { float: right; margin-right:11em; }
       .score-container { float: right; margin-right:20em;}
       .nav { font-size: 120%; padding: 4px 0px;}
     </style>
@@ -45,6 +46,7 @@
             <ul class="nav">
                 <li {% if view == "league" %}class="active"{%endif%}><a href="{% url league 1 %}">League</a></li>
                 <li {% if view == "events" %}class="active"{%endif%}><a href="{% url events 1 %}">Events</a></li>
+                <li {% if view == "roster" %}class="active"{%endif%}><a href="{% url roster %}">Roster</a></li>
             </ul>
           </div><!--/.nav-collapse -->
         </div>

@@ -45,6 +45,7 @@ def league(request, league_id):
 
 def roster(request):
     context = {
-        'stars': Star.objects.all()
+        'stars': Star.objects.all(),
+        'view': 'roster'
     }
     return render(request, "roster.html", context)
