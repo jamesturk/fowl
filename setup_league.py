@@ -86,7 +86,7 @@ event.add_match('alexriley', 'christian', 'curthawkins', 'darrenyoung',
 event.add_match(['kofikingston', 'rtruth'], ['dolphziggler', 'jackswagger'],
                 winner='kofikingston', outcome='normal', title_at_stake='tag')
 event.add_match('layla', 'bethphoenix', winner='layla',
-                outcome='normal', title_at_stake='divas')
+                outcome='normal', title_at_stake='diva')
 event.add_match('sheamus', 'randyorton', 'chrisjericho', 'albertodelrio',
                 winner='sheamus', outcome='normal',
                 title_at_stake='heavyweight')
