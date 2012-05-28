@@ -4,9 +4,13 @@ from django.contrib.auth.models import User
 
 # these things are independent of the game
 
-WIN_TYPES = (('pin', 'pin'),
+WIN_TYPES = (
+             ('pin', 'pin'),
              ('DQ', 'DQ'),
-             ('submission', 'submission'))
+             ('submission', 'submission'),
+             ('appearance', 'appearance'),
+             ('brawl', 'brawl'),
+            )
 
 TITLES = (('wwe', 'WWE'),
           ('heavyweight', 'Heavyweight'),
@@ -44,7 +48,7 @@ class Event(models.Model):
 
     def add_match(self, *teams, **kwargs):
         winner = kwargs.get('winner', None)
-        win_type = kwargs.get('win_type', None)
+        win_type = kwargs.get('win_type', '')
         title_at_stake = kwargs.get('title_at_stake', False)
         notes = kwargs.get('notes', '')
 
@@ -68,6 +72,9 @@ class Event(models.Model):
                 mt.members.add(member)
         if winner:
             match.record_win(winner, win_type)
+        else:
+            match.win_type = win_type
+            match.save()
         return match
 
     def __unicode__(self):
@@ -98,6 +105,10 @@ class Match(models.Model):
         for team in self.teams.all():
             for star in team.members.all():
                 points[star.id] = 0
+                if self.win_type == 'appearance' and not star.active:
+                    points[star.id] += 10
+                if self.win_type == 'brawl':
+                    points[star.id] += 2
             if team.title:
                 title_teams[team.title] = team
             if team.victorious:
@@ -105,6 +116,10 @@ class Match(models.Model):
             else:
                 losers.append(team.members.count())
             team_count += 1
+
+        # don't worry about winners of appearances or brawls
+        if self.win_type in ('appearance', 'brawl'):
+            return points
 
         if winners:
             winner_count = winners.members.count()

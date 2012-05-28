@@ -135,6 +135,23 @@ class MatchTest(TestCase):
                                           'albertodelrio': 0
                                          })
 
+    def test_appearance_scoring(self):
+        # normal appearance worth 0 points
+        match = self.event.add_match('cmpunk', 'kofikingston',
+                                     win_type='appearance')
+        self.assertEqual(match.points(), {'cmpunk': 0, 'kofikingston': 0})
+
+        # appearance of old timer, 10 points
+        match = self.event.add_match('brock-lesnar', win_type='appearance')
+        self.assertEqual(match.points(), {'brock-lesnar': 10})
+
+    def test_brawl_scoring(self):
+        # brawls worth 2 points for all involved
+        match = self.event.add_match(['cmpunk', 'aj'], 'danielbryan',
+                                     win_type='brawl')
+        self.assertEqual(match.points(), {'cmpunk': 2, 'aj': 2,
+                                          'danielbryan': 2})
+
     def test_champ_scoring(self):
         _give_belt('cmpunk', 'wwe')
         _give_belt('christian', 'ic')
