@@ -45,7 +45,7 @@ class EventTest(TestCase):
         event.add_match('jimross', 'jerrylawler',
                         winner='jimross', outcome='submission')
         event = Event.objects.get()
-        expected = {'name': 'RAW', 'date': datetime.date(2012,1,1),
+        expected = {'id': 1, 'name': 'RAW', 'date': datetime.date(2012,1,1),
                     'matches': [
                         {'teams': [[u'jimross'],[u'jerrylawler']],
                          'winner': u'jimross',
@@ -79,6 +79,28 @@ class EventTest(TestCase):
         self.assertEqual(match_one.outcome, 'submission')
         self.assertEqual(match_one.notes, '')
         self.assertEqual(match_one.title_at_stake, None)
+
+        # test updating a dict
+        edict = {'id': 1, 'name': 'Smackdown', 'date': datetime.date(2013,1,1),
+                    'matches': [
+                        {'teams': [[u'jimross'],[u'jerrylawler']],
+                         'winner': u'jimross',
+                         'outcome': u'submission',
+                         'notes': '',
+                         'title_at_stake': None,
+                        },
+                        {'teams': [[u'michaelcole']],
+                         'outcome': u'appearance',
+                         'winner': None,
+                         'notes': '',
+                         'title_at_stake': None,
+                        }
+                   ]
+                }
+        event = Event.from_dict(edict)
+        self.assertEqual(event.name, 'Smackdown')
+        self.assertEqual(event.date, datetime.date(2013,1,1))
+        self.assertEqual(event.matches.count(), 2)
 
 
 class MatchTest(TestCase):
