@@ -4,14 +4,13 @@ from django.contrib.auth.models import User
 
 # these things are independent of the game
 
-OUTCOMES = (
-             ('no contest', 'no contest'),
-             ('normal', 'normal'),
-             ('DQ', 'DQ'),
-             ('submission', 'submission'),
-             ('appearance', 'appearance'),
-             ('brawl', 'brawl'),
-            )
+OUTCOMES = (('no contest', 'no contest'),
+            ('normal', 'normal'),
+            ('DQ', 'DQ'),
+            ('submission', 'submission'),
+            ('appearance', 'appearance'),
+            ('brawl', 'brawl'),
+           )
 
 TITLES = (('wwe', 'WWE'),
           ('heavyweight', 'Heavyweight'),
@@ -53,7 +52,7 @@ class Event(models.Model):
     def add_match(self, *teams, **kwargs):
         winner = kwargs.get('winner', None)
         outcome = kwargs.get('outcome', '')
-        title_at_stake = kwargs.get('title_at_stake', False)
+        title_at_stake = kwargs.get('title_at_stake', None)
         notes = kwargs.get('notes', '')
 
         match = Match.objects.create(event=self,
@@ -89,7 +88,7 @@ class Match(models.Model):
     event = models.ForeignKey(Event, related_name='matches')
     winner = models.ForeignKey(Star, null=True)
     outcome = models.CharField(max_length=10, choices=OUTCOMES)
-    title_at_stake = models.BooleanField(default=False)
+    title_at_stake = models.CharField(max_length=50, choices=TITLES, null=True)
     notes = models.TextField(blank=True, default='')
 
     def record_win(self, star, outcome):
@@ -99,6 +98,16 @@ class Match(models.Model):
         self.winner_id = star
         self.outcome = outcome
         self.save()
+
+    def do_title_change(self):
+        if self.title_at_stake:
+            victors = list(self.teams.get(victorious=True).members.all())
+            if len(victors) == 1:
+                victor[0].win_title(self.title_at_stake)
+            elif len(victors) == 2 and self.title_at_stake == 'tag':
+                victor[0].win_title(self.title_at_stake, victor[1])
+            else:
+                raise ValueError('invalid number of victors for title change')
 
     def points(self):
         points = {}
@@ -147,39 +156,41 @@ class Match(models.Model):
             for w in winners.members.all():
                 points[w.id] = base_points
 
-                # if multiple people in this match and this person was credited
-                # w/ win, give them the bonus points
-                if allies and w.id == self.winner_id:
-                    points[w.id] += 1
-                if w.id == self.winner_id and self.outcome == 'submission':
-                    points[w.id] += 1
-
-                # look over all titles in this match
-                for title, title_team in title_teams.iteritems():
-                    # title defense
-                    if winners.title == title and self.title_at_stake:
-                        if title in ('heavyweight', 'wwe'):
+                if self.title_at_stake:
+                    if winners.title == self.title_at_stake:
+                        # title defense
+                        if winners.title in ('heavyweight', 'wwe'):
                             points[w.id] += 5
                         else:
                             points[w.id] += 3
-                    # beat someone w/ title
-                    elif winners.title != title:
-                        # title win
-                        if self.title_at_stake and self.outcome != 'DQ':
-                            if title in ('heavyweight', 'wwe'):
-                                points[w.id] += 20
-                            else:
-                                points[w.id] += 10
-                        # title team gets a point if they defend title by DQ
-                        elif self.title_at_stake and self.outcome == 'DQ':
-                            for star in title_team.members.all():
-                                points[star.id] += 1
-                        # beat tag champs in tag match w/o tag belt on line
-                        elif title == 'tag' and all(c == 2 for c in losers):
-                            points[w.id] += 2
-                        # beat champ in non-handicap match w/o belt on line
-                        elif all(c == 1 for c in losers):
-                            points[w.id] += 2
+                    elif self.outcome in ('normal', 'submission'):
+                        # title win!
+                        if self.title_at_stake in ('heavyweight', 'wwe'):
+                            points[w.id] += 20
+                        else:
+                            points[w.id] += 10
+                    else:
+                        # defense by DQ
+                        for star in title_teams[self.title_at_stake].members.all():
+                            points[star.id] += 1
+                else:
+                    # look over titles in match, to score a title-nondefense
+                    for title, title_team in title_teams.iteritems():
+                        # beat someone w/ title in a non-defense
+                        if winners.title != title:
+                            # beat tag champs in tag match w/o tag belt on line
+                            if title == 'tag' and all(c == 2 for c in losers):
+                                points[w.id] += 2
+                            # beat champ in non-handicap match w/o belt on line
+                            elif all(c == 1 for c in losers):
+                                points[w.id] += 2
+
+            # if multiple people in this match and this person was credited
+            # w/ win, give them the bonus points
+            if allies:
+                points[self.winner_id] += 1
+            if self.outcome == 'submission':
+                points[self.winner_id] += 1
         return points
 
     def __unicode__(self):
@@ -208,6 +219,7 @@ class MatchTeam(models.Model):
 
 class League(models.Model):
     name = models.CharField(max_length=100)
+    active = models.BooleanField(default=True)
     raw_picks = models.IntegerField(default=3)
     smackdown_picks = models.IntegerField(default=3)
     diva_picks = models.IntegerField(default=2)

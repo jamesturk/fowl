@@ -84,17 +84,18 @@ event.add_match('alexriley', 'christian', 'curthawkins', 'darrenyoung',
                 'tylerreks', 'tysonkidd', 'williamregal', 'yoshitatsu',
                 winner='christian', outcome='normal')
 event.add_match(['kofikingston', 'rtruth'], ['dolphziggler', 'jackswagger'],
-                winner='kofikingston', outcome='normal', title_at_stake=True)
+                winner='kofikingston', outcome='normal', title_at_stake='tag')
 event.add_match('layla', 'bethphoenix', winner='layla',
-                outcome='normal', title_at_stake=True)
+                outcome='normal', title_at_stake='divas')
 event.add_match('sheamus', 'randyorton', 'chrisjericho', 'albertodelrio',
-                winner='sheamus', outcome='normal', title_at_stake=True)
+                winner='sheamus', outcome='normal',
+                title_at_stake='heavyweight')
 event.add_match('brodusclay', 'themiz', winner='brodusclay', outcome='normal')
-event.add_match('christian', 'codyrhodes', winner='christian', outcome='normal',
-                title_at_stake=True)
+event.add_match('christian', 'codyrhodes', winner='christian',
+                outcome='normal', title_at_stake='ic')
 _give_belt('christian', 'ic')
 event.add_match('cmpunk', 'danielbryan', winner='cmpunk', outcome='normal',
-                title_at_stake=True)
+                title_at_stake='wwe')
 event.add_match('ryback', 'camacho', winner='ryback', outcome='normal')
 event.add_match('john-laurinaitis', 'johncena', 'bigshow',
                 winner='john-laurinaitis',
