@@ -103,9 +103,9 @@ class Match(models.Model):
         if self.title_at_stake:
             victors = list(self.teams.get(victorious=True).members.all())
             if len(victors) == 1:
-                victor[0].win_title(self.title_at_stake)
+                victors[0].win_title(self.title_at_stake)
             elif len(victors) == 2 and self.title_at_stake == 'tag':
-                victor[0].win_title(self.title_at_stake, victor[1])
+                victors[0].win_title(self.title_at_stake, victors[1])
             else:
                 raise ValueError('invalid number of victors for title change')
 
@@ -246,6 +246,7 @@ class League(models.Model):
 
 class Team(models.Model):
     name = models.CharField(max_length=100)
+    color = models.CharField(max_length=50)
     login = models.OneToOneField(User, related_name='team')
     league = models.ForeignKey(League, related_name='teams')
     stars = models.ManyToManyField(Star, related_name='teams')

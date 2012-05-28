@@ -19,9 +19,13 @@ james = User.objects.create_superuser('james', 'james.p.turk@gmail.com', 'james'
 erin = User.objects.create_user('erin', 'erin.braswell@gmail.com', 'erin')
 kevin = User.objects.create_user('kevin', 'kevin.wohlgenant@gmail.com', 'kevin')
 league = League.objects.create(name='Fire Pro Wrestling')
-gm_punk = Team.objects.create(name='GM Punk', login=james, league=league)
-awesome = Team.objects.create(name="I'm AWEsome!", login=kevin, league=league)
-cobra = Team.objects.create(name='COBRA!', login=erin, league=league)
+gm_punk = Team.objects.create(name='GM Punk', login=james, league=league,
+                              color='#1540a4')
+awesome = Team.objects.create(name="I'm AWEsome!", login=kevin, league=league,
+                              color='#f5a506')
+cobra = Team.objects.create(name='COBRA!', login=erin, league=league,
+                            color='#05c405')
+
 
 punks = ('cmpunk', 'markhenry', 'rtruth', 'codyrhodes',
          'tensai', 'antoniocesaro', 'wadebarrett', 'aj', 'bethphoenix',
@@ -86,7 +90,7 @@ event.add_match('alexriley', 'christian', 'curthawkins', 'darrenyoung',
 event.add_match(['kofikingston', 'rtruth'], ['dolphziggler', 'jackswagger'],
                 winner='kofikingston', outcome='normal', title_at_stake='tag')
 event.add_match('layla', 'bethphoenix', winner='layla',
-                outcome='normal', title_at_stake='divas')
+                outcome='normal', title_at_stake='diva')
 event.add_match('sheamus', 'randyorton', 'chrisjericho', 'albertodelrio',
                 winner='sheamus', outcome='normal',
                 title_at_stake='heavyweight')

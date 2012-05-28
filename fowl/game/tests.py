@@ -51,6 +51,40 @@ class MatchTest(TestCase):
         self.assertEqual(unicode(match), 'CM Punk (c) (v) vs. Rey Mysterio')
 
 
+    def test_do_title_change(self):
+        # title to punk
+        match = self.event.add_match('cmpunk', 'reymysterio', winner='cmpunk',
+                                     outcome='normal', title_at_stake='wwe')
+        match.do_title_change()
+        self.assertEqual(Star.objects.get(pk='cmpunk').title, 'wwe')
+
+        # title to mysterio
+        match = self.event.add_match('cmpunk', 'reymysterio',
+                                     winner='reymysterio', outcome='normal',
+                                     title_at_stake='wwe')
+        match.do_title_change()
+        self.assertEqual(Star.objects.get(pk='reymysterio').title, 'wwe')
+        self.assertEqual(Star.objects.get(pk='cmpunk').title, None)
+
+        # tag title
+        match = self.event.add_match(['kofikingston', 'rtruth'],
+                                     ['jackswagger', 'dolphziggler'],
+                                     winner='dolphziggler', outcome='normal',
+                                     title_at_stake='tag')
+        match.do_title_change()
+        self.assertEqual(Star.objects.get(pk='kofikingston').title, None)
+        self.assertEqual(Star.objects.get(pk='rtruth').title, None)
+        self.assertEqual(Star.objects.get(pk='dolphziggler').title, 'tag')
+        self.assertEqual(Star.objects.get(pk='jackswagger').title, 'tag')
+
+        match = self.event.add_match(['kofikingston', 'rtruth'],
+                                     ['jackswagger', 'dolphziggler'],
+                                     winner='dolphziggler', outcome='normal',
+                                     title_at_stake='diva')
+        # diva title on a tag match
+        with self.assertRaises(ValueError):
+            match.do_title_change()
+
     def test_scoring(self):
         # one on one : 2 points
         match = self.event.add_match('tripleh', 'undertaker',
