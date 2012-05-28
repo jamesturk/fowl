@@ -7,7 +7,7 @@ def _give_belt(star, belt):
     Star.objects.get(pk=star).win_title(belt)
 
 class StarTest(TestCase):
-    def test_win_belt(self):
+    def test_win_title(self):
         cmpunk = Star.objects.create(pk='cmpunk', name='CM Punk', title='wwe')
         dbry = Star.objects.create(pk='danielbryan', name='Daniel Bryan')
         kofi = Star.objects.create(pk='kofi', name='Kofi Kingston',

@@ -34,9 +34,6 @@ class Star(models.Model):
             tag_partner.title = title
             tag_partner.save()
 
-    def drafted(self, league):
-        return self.teams.filter(league=league).count() >= 1
-
     def __unicode__(self):
         return self.name
 
@@ -221,11 +218,11 @@ class Team(models.Model):
     stars = models.ManyToManyField(Star, related_name='teams')
 
     def add_star(self, pk):
-        member = Star.objects.get(pk=pk)
-        if member.drafted(self.league):
+        star = Star.objects.get(pk=pk)
+        if self.league.teams.filter(stars=star).count() >= 1:
             raise ValueError('cannot add {0}, already drafted in {1}'.format(
-                             member, self.league))
-        self.stars.add(member)
+                             star, self.league))
+        self.stars.add(star)
 
     def drop_star(self, pk):
         member = Star.objects.get(pk=pk)
