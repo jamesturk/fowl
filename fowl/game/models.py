@@ -82,7 +82,9 @@ class Match(models.Model):
     notes = models.TextField(blank=True, default='')
 
     def record_win(self, star, win_type):
-        self.teams.filter(members__pk=star).update(victorious=True)
+        team = self.teams.get(members__pk=star)
+        team.victorious = True
+        team.save()
         self.winner_id = star
         self.win_type = win_type
         self.save()

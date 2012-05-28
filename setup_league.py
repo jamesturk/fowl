@@ -92,7 +92,7 @@ event.add_match('cmpunk', 'danielbryan', winner='cmpunk', win_type='pin',
                 title_at_stake=True)
 event.add_match('ryback', 'camacho', winner='ryback', win_type='pin')
 event.add_match('john-laurinaitis', 'johncena', 'bigshow',
-                winner='johnlaurinaitis',
+                winner='john-laurinaitis',
                 win_type='pin', notes='Big Show interferes in a big way')
 league.score_event(event)
 
