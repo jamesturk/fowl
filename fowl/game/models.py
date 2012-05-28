@@ -4,8 +4,9 @@ from django.contrib.auth.models import User
 
 # these things are independent of the game
 
-WIN_TYPES = (
-             ('pin', 'pin'),
+OUTCOMES = (
+             ('no contest', 'no contest'),
+             ('normal', 'normal'),
              ('DQ', 'DQ'),
              ('submission', 'submission'),
              ('appearance', 'appearance'),
@@ -48,7 +49,7 @@ class Event(models.Model):
 
     def add_match(self, *teams, **kwargs):
         winner = kwargs.get('winner', None)
-        win_type = kwargs.get('win_type', '')
+        outcome = kwargs.get('outcome', '')
         title_at_stake = kwargs.get('title_at_stake', False)
         notes = kwargs.get('notes', '')
 
@@ -71,9 +72,9 @@ class Event(models.Model):
                     mt.save()
                 mt.members.add(member)
         if winner:
-            match.record_win(winner, win_type)
+            match.record_win(winner, outcome)
         else:
-            match.win_type = win_type
+            match.outcome = outcome
             match.save()
         return match
 
@@ -84,16 +85,16 @@ class Event(models.Model):
 class Match(models.Model):
     event = models.ForeignKey(Event, related_name='matches')
     winner = models.ForeignKey(Star, null=True)
-    win_type = models.CharField(max_length=10, choices=WIN_TYPES)
+    outcome = models.CharField(max_length=10, choices=OUTCOMES)
     title_at_stake = models.BooleanField(default=False)
     notes = models.TextField(blank=True, default='')
 
-    def record_win(self, star, win_type):
+    def record_win(self, star, outcome):
         team = self.teams.get(members__pk=star)
         team.victorious = True
         team.save()
         self.winner_id = star
-        self.win_type = win_type
+        self.outcome = outcome
         self.save()
 
     def points(self):
@@ -105,9 +106,9 @@ class Match(models.Model):
         for team in self.teams.all():
             for star in team.members.all():
                 points[star.id] = 0
-                if self.win_type == 'appearance' and not star.active:
+                if self.outcome == 'appearance' and not star.active:
                     points[star.id] += 10
-                if self.win_type == 'brawl':
+                if self.outcome == 'brawl':
                     points[star.id] += 2
             if team.title:
                 title_teams[team.title] = team
@@ -118,7 +119,7 @@ class Match(models.Model):
             team_count += 1
 
         # don't worry about winners of appearances or brawls
-        if self.win_type in ('appearance', 'brawl'):
+        if self.outcome in ('appearance', 'brawl'):
             return points
 
         if winners:
@@ -127,7 +128,7 @@ class Match(models.Model):
 
             # figure out base points for winning
             # DQ wins are worth 1 point no matter what
-            if self.win_type == 'DQ':
+            if self.outcome == 'DQ':
                 base_points = 1
                 allies = 0   # allies don't matter in a DQ
             # rumble is worth participants/2
@@ -147,7 +148,7 @@ class Match(models.Model):
                 # w/ win, give them the bonus points
                 if allies and w.id == self.winner_id:
                     points[w.id] += 1
-                if w.id == self.winner_id and self.win_type == 'submission':
+                if w.id == self.winner_id and self.outcome == 'submission':
                     points[w.id] += 1
 
                 # look over all titles in this match
@@ -161,13 +162,13 @@ class Match(models.Model):
                     # beat someone w/ title
                     elif winners.title != title:
                         # title win
-                        if self.title_at_stake and self.win_type != 'DQ':
+                        if self.title_at_stake and self.outcome != 'DQ':
                             if title in ('heavyweight', 'wwe'):
                                 points[w.id] += 20
                             else:
                                 points[w.id] += 10
                         # title team gets a point if they defend title by DQ
-                        elif self.title_at_stake and self.win_type == 'DQ':
+                        elif self.title_at_stake and self.outcome == 'DQ':
                             for star in title_team.members.all():
                                 points[star.id] += 1
                         # beat tag champs in tag match w/o tag belt on line
