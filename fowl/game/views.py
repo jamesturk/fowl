@@ -1,6 +1,7 @@
 from collections import defaultdict
+from itertools import izip_longest
 from django.shortcuts import render, get_object_or_404
-from fowl.game.models import TeamPoints
+from fowl.game.models import Team, TeamPoints
 
 
 def events(request):
@@ -29,5 +30,9 @@ def edit_event(request, event_id=None):
 
 
 def stables(request):
-    context = {'belts':['ic', 'us', 'heavyweight', 'wwe']}
+    context = { 'belts': ['ic', 'us', 'heavyweight', 'wwe']
+              }
+    teams = list(Team.objects.all().prefetch_related('stars'))
+    context['teams'] = teams
+    context['star_sets'] = izip_longest(*(team.stars.all() for team in teams))
     return render(request, "stables.html", context)
