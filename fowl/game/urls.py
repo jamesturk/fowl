@@ -7,5 +7,6 @@ urlpatterns = patterns('',
         name='league'),
     url(r'^edit_event/(?P<event>\d+|new)/$', 'fowl.game.views.edit_event',
         name='edit_event'),
-    url(r'^roster/$', 'fowl.game.views.roster', name='roster'),
+    url(r'^roster/(?P<league_id>\d+)/$', 'fowl.game.views.roster',
+        name='roster'),
 )

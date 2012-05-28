@@ -1,10 +1,12 @@
 from itertools import izip_longest
 from collections import defaultdict
 from django.shortcuts import render, get_object_or_404
-from fowl.game.models import Team, TeamPoints, Star, Event, OUTCOMES, TITLES
+from fowl.game.models import (Team, TeamPoints, Star, Event, League,
+                              OUTCOMES, TITLES)
 
 
 def events(request, league_id):
+    league = get_object_or_404(League, pk = league_id)
     events = {}
     points = TeamPoints.objects.filter(team__league_id=league_id).order_by(
         'match', 'team').select_related()
@@ -19,7 +21,7 @@ def events(request, league_id):
         events[event_id].scores.setdefault(tp.team, 0)
         events[event_id].scores[tp.team] += tp.points
     events = sorted(events.values(), key=lambda x: x.date, reverse=True)
-    return render(request, "events.html", {'events': events, 'view': 'events'})
+    return render(request, "events.html", {'events': events, 'view': 'events', 'league': league})
 
 
 def edit_event(request, event):
@@ -61,9 +63,13 @@ def edit_event(request, event):
                  )
 
 def league(request, league_id):
+    league = get_object_or_404(League, pk = league_id)
+    leagues = League.objects.all()
     context = {
         'view': 'league',
-        'belts': ['ic', 'us', 'heavyweight', 'wwe']
+        'belts': ['ic', 'us', 'heavyweight', 'wwe'],
+        'league': league,
+        'leagues': leagues
     }
     teams = list(Team.objects.filter(league__id=league_id)
                  .prefetch_related('stars'))
@@ -73,9 +79,13 @@ def league(request, league_id):
     return render(request, "stables.html", context)
 
 
-def roster(request):
+def roster(request, league_id):
+    league = get_object_or_404(League, pk = league_id)
+    leagues = League.objects.all()
     context = {
         'stars': Star.objects.all(),
-        'view': 'roster'
+        'view': 'roster',
+        'league': league,
+        'leagues': leagues
     }
     return render(request, "roster.html", context)
