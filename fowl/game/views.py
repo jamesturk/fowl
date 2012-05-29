@@ -85,12 +85,11 @@ def league(request, league_id):
         'league': league,
         'leagues': leagues
     }
-    teams = list(Team.objects.filter(league__id=league_id)
-                 .prefetch_related('stars'))
+    teams = list(Team.objects.filter(league__id=league_id))
     context['teams'] = teams
     context['star_sets'] = izip_longest(*(team.stars.all().order_by("division")
                                           for team in teams))
-    return render(request, "stables.html", context)
+    return render(request, "league.html", context)
 
 
 def roster(request, league_id):
