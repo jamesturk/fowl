@@ -9,7 +9,7 @@ from fowl.game.models import (Team, TeamPoints, Star, Event, League,
 @login_required
 def events(request, league_id):
     league = get_object_or_404(League, pk = league_id)
-    leagues = League.objects.all()
+    leagues = League.objects.filter(teams__login=request.user)
     events = {}
     points = TeamPoints.objects.filter(team__league_id=league_id).order_by(
         'match__id', 'team').select_related()
@@ -83,7 +83,7 @@ def edit_event(request, event):
 @login_required
 def league(request, league_id):
     league = get_object_or_404(League, pk = league_id)
-    leagues = League.objects.all()
+    leagues = League.objects.filter(teams__login=request.user)
     context = {
         'view': 'league',
         'belts': ['ic', 'us', 'heavyweight', 'wwe'],
@@ -99,7 +99,7 @@ def league(request, league_id):
 
 def roster(request, league_id):
     league = get_object_or_404(League, pk = league_id)
-    leagues = League.objects.all()
+    leagues = League.objects.filter(teams__login=request.user)
     context = {
         'stars': Star.objects.all(),
         'view': 'roster',
