@@ -7,6 +7,7 @@ from fowl.game.models import (Team, TeamPoints, Star, Event, League,
 
 def events(request, league_id):
     league = get_object_or_404(League, pk = league_id)
+    leagues = League.objects.all()
     events = {}
     points = TeamPoints.objects.filter(team__league_id=league_id).order_by(
         'match', 'team').select_related()
@@ -21,7 +22,7 @@ def events(request, league_id):
         events[event_id].scores.setdefault(tp.team, 0)
         events[event_id].scores[tp.team] += tp.points
     events = sorted(events.values(), key=lambda x: x.date, reverse=True)
-    return render(request, "events.html", {'events': events, 'view': 'events', 'league': league})
+    return render(request, "events.html", {'events': events, 'view': 'events', 'league': league, 'leagues':leagues})
 
 
 def edit_event(request, event):
