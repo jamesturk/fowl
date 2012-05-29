@@ -22,6 +22,7 @@
       .other { float: right; margin-right:11em; }
       .score-container { float: right; margin-right:20em;}
       .nav { font-size: 120%; padding: 4px 0px;}
+      .nav.pull-right { font-size: 120%; padding: 4px 0px;}
       .matchform { border: 1px solid black; }
     </style>
     <link href="{% static "assets/css/bootstrap-responsive.css" %}" rel="stylesheet">
@@ -54,11 +55,13 @@
                     {% endfor %}
                   </ul>
                </li>
-
               <li {% if view == "league" %}class="active"{%endif%}><a href="{% url league league.id %}">League</a></li>
               <li {% if view == "events" %}class="active"{%endif%}><a href="{% url events league.id %}">Events</a></li>
               <li {% if view == "roster" %}class="active"{%endif%}><a href="{% url roster league.id %}">Roster</a></li>
               {% endif %}
+            </ul>
+            <ul class='nav pull-right'>
+              <li><a href="#"> {{ user }} </a></li>
             </ul>
           </div><!--/.nav-collapse -->
         </div>
