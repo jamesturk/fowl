@@ -1,10 +1,12 @@
 from itertools import izip_longest
 from collections import defaultdict
 from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
 from fowl.game.models import (Team, TeamPoints, Star, Event, League,
                               OUTCOMES, TITLES)
 
 
+@login_required
 def events(request, league_id):
     league = get_object_or_404(League, pk = league_id)
     leagues = League.objects.all()
@@ -26,6 +28,7 @@ def events(request, league_id):
                    'leagues':leagues})
 
 
+@login_required
 def edit_event(request, event):
     if event == 'new':
         event = None
@@ -76,6 +79,8 @@ def edit_event(request, event):
                    'TITLES': TITLES}
                  )
 
+
+@login_required
 def league(request, league_id):
     league = get_object_or_404(League, pk = league_id)
     leagues = League.objects.all()
