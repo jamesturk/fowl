@@ -50,14 +50,20 @@ class Event(models.Model):
     date = models.DateField()
 
     def to_dict(self):
-        d = {'name': self.name, 'date': self.date,
+        d = {'id': self.id, 'name': self.name, 'date': self.date,
              'matches': [m.to_dict() for m in self.matches.all()]
             }
         return d
 
     @staticmethod
     def from_dict(d):
-        event = Event.objects.create(name=d['name'], date=d['date'])
+        if d.get('id'):
+            event = Event.objects.get(pk=d['id'])
+            event.name = d['name']
+            event.date = d['date']
+            event.matches.all().delete()
+        else:
+            event = Event.objects.create(name=d['name'], date=d['date'])
         for match in d['matches']:
             event.add_match(*match['teams'],
                             winner=match['winner'],

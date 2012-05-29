@@ -1,6 +1,8 @@
 from itertools import izip_longest
+from collections import defaultdict
 from django.shortcuts import render, get_object_or_404
-from fowl.game.models import Team, TeamPoints, Star, Event, League
+from fowl.game.models import (Team, TeamPoints, Star, Event, League,
+                              OUTCOMES, TITLES)
 
 
 def events(request, league_id):
@@ -23,14 +25,43 @@ def events(request, league_id):
     return render(request, "events.html", {'events': events, 'view': 'events', 'league': league, 'leagues':leagues})
 
 
-def edit_event(request, event_id=None):
-    if event_id:
-        event = get_object_or_404(Event, pk=event_id)
-    else:
+def edit_event(request, event):
+    if event == 'new':
         event = None
-    if request.method == 'GET':
-        return render(request, "edit_event.html", {"event": event})
+    else:
+        event = get_object_or_404(Event, pk=event).to_dict()
 
+    if request.method == 'POST':
+        edict = {}
+        edict['id'] = request.POST.get('id')
+        edict['name'] = request.POST.get('name')
+        edict['date'] = request.POST.get('date')
+        edict['matches'] = []
+
+        outcomes = request.POST.getlist('outcome')
+        winners = request.POST.getlist('winner')
+        titles = request.POST.getlist('title')
+        notes = request.POST.getlist('notes')
+        for i, note in enumerate(notes):
+            edict['matches'].append({'outcome': outcomes[i],
+                                     'winner': winners[i],
+                                     'title_at_stake': titles[i],
+                                     'notes': notes[i],
+                                     'teams': [],
+                                    })
+
+        for k,v in request.POST.iterlists():
+            if k.startswith('members'):
+                _, match, team = k.split('-')
+                edict['matches'][int(match)-1]['teams'].append(v)
+
+        event = Event.from_dict(edict)
+
+    return render(request, "edit_event.html",
+                  {'event': event,
+                   'OUTCOMES': OUTCOMES,
+                   'TITLES': TITLES}
+                 )
 
 def league(request, league_id):
     league = get_object_or_404(League, pk = league_id)
