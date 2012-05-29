@@ -9,6 +9,10 @@
 PPVs, since the creation of this league.</p>
 </header>
 
+<div>
+    <p><a class='btn btn-primary' href='{% url edit_event "new" %}'>New Event</a></p>
+</div>
+
 {% for event in events %}
 
 <div class="accordion-group">
@@ -55,7 +59,7 @@ PPVs, since the creation of this league.</p>
         {% endfor %}
       </tbody>
     </table>
-
+    <p><a class='btn btn' href='{% url edit_event event.id %}'>Edit Event</a></p>
     </div>
     </div>
 </div>
