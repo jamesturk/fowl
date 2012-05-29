@@ -50,10 +50,13 @@ def edit_event(request, event):
                                      'teams': [],
                                     })
 
-        for k,v in request.POST.iterlists():
+        for k, team in request.POST.iterlists():
             if k.startswith('members'):
-                _, match, team = k.split('-')
-                edict['matches'][int(match)-1]['teams'].append(v)
+                _, match, _ = k.split('-')
+                # remove empty strings from team
+                team = [m for m in team if m]
+                if team:
+                    edict['matches'][int(match)-1]['teams'].append(team)
 
         event = Event.from_dict(edict)
         # score the event for all active leagues

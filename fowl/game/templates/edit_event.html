@@ -1,4 +1,42 @@
 {% extends "base.html" %}
+
+{% block extrascript %}
+<script>
+    $(document).ready(function() {
+        $('#addMatch').click(function() {
+            var newform = '<div class="matchform"> \
+<h4>Match</h4> \
+<table class="table"> <tbody> \
+    <tr> <th>team #1</th> \
+        <td><input type="text" class="span3" name="members-MATCH_NUM-1" value=""> </td> \
+        <td><input type="text" class="span3" name="members-MATCH_NUM-1" value=""> </td> \
+    </tr> \
+    <tr> <th>team #2</th> \
+        <td><input type="text" class="span3" name="members-MATCH_NUM-2" value=""> </td> \
+        <td><input type="text" class="span3" name="members-MATCH_NUM-2" value=""> </td> \
+    </tr> \
+    <tr> <th>team #3</th> \
+        <td><input type="text" class="span3" name="members-MATCH_NUM-3" value=""> </td> \
+        <td><input type="text" class="span3" name="members-MATCH_NUM-3" value=""> </td> \
+    </tr> \
+</tbody> </table> \
+<label>Outcome</label> <select name="outcome"> \
+{% for val, name in OUTCOMES %} <option value="{{val}}">{{name}}</option> {% endfor %} \
+</select> \
+<label>Winner</label> <input type="text" class="span3" name="winner"> \
+<label>Title</label> <select name="title"> <option value="">(none)</option> \
+{% for val, name in TITLES %} <option value="{{val}}"> {{name}}</option> {% endfor %} \
+</select> <br> \
+<label>Notes</label> <input type="text" class="span6" name="notes"> \
+<br> <button class="btn">Add Team</button> <button class="btn">Add Member</button> <button class="btn btn-danger">Delete Match</button> </div>';
+            var num_matches = $('.matchform').length+1;
+            $('#all-matches').append(newform.replace(/MATCH_NUM/g, num_matches));
+            return false;
+        });
+    });
+</script>
+{% endblock %}
+
 {% block content %}
 <form class="well form-inline" action="." method="post">
     <label>Show Name</label>
@@ -6,105 +44,60 @@
     <input type="text" class="span3" name="name" value="{{event.name}}"
       placeholder="RAW/Smackdown/PPV Name">
     <label>Date</label>
-    <input type="text" class="span3" name="date" value="{{event.date}}"
-      placeholder="YYYY-MM-DD">
+    <input type="text" class="span3" name="date" value="{{event.date}}" placeholder="YYYY-MM-DD">
+    <div id="all-matches">
     {% for match in event.matches %}
-    <!-- match -->
-    <hr>
-    <h4>Match #{{forloop.counter}}</h4>
-    <table class="table">
-        <tbody>
-            {% for team in match.teams %}
-            <tr>
-                <th>team #{{forloop.counter}}</th>
-                {% for member in team %}
-                <td><input type="text" class="span3"
-                    {# member-event_id-team_id #}
-                    name="members-{{forloop.parentloop.parentloop.counter}}-{{forloop.parentloop.counter}}"
-                        value="{{member}}">
-                </td>
+    <div class="matchform">
+        <h4>Match</h4>
+        <table class="table">
+            <tbody>
+                {% for team in match.teams %}
+                <tr>
+                    <th>team #{{forloop.counter}}</th>
+                    {% for member in team %}
+                    <td><input type="text" class="span3"
+                        {# member-event_id-team_id #}
+                        name="members-{{forloop.parentloop.parentloop.counter}}-{{forloop.parentloop.counter}}"
+                            value="{{member}}">
+                    </td>
+                    {% endfor %}
+                </tr>
                 {% endfor %}
-            </tr>
+            </tbody>
+        </table>
+        <label>Outcome</label>
+        <select name="outcome">
+            {% for val, name in OUTCOMES %}
+            <option value="{{val}}" 
+            {% if match.outcome == val %}selected="selected"{% endif %}>
+            {{name}}</option>
             {% endfor %}
-        </tbody>
-    </table>
-    <label>Outcome</label>
-    <select name="outcome">
-        {% for val, name in OUTCOMES %}
-        <option value="{{val}}" 
-        {% if match.outcome == val %}selected="selected"{% endif %}>
-        {{name}}</option>
-        {% endfor %}
-    </select>
-    <label>Winner</label>
-    <input type="text" class="span3" name="winner"
-        value="{{match.winner}}">
-    <label>Title</label>
-    <select name="title">
-        <option value="">(none)</option>
-        {% for val, name in TITLES %}
-        <option value="{{val}}"
-        {% if match.title_at_stake == val %}selected="selected"{% endif %}>
-        {{name}}</option>
-        {% endfor %}
-    </select>
-    <br>
-    <label>Notes</label>
-    <input type="text" class="span6" name="notes"
-        value="{{match.notes}}">
-    <br>
-    <button class="btn">Add Team</button>
-    <button class="btn">Add Member</button>
-    <button class="btn btn-danger">Delete Match</button>
-    <!-- /match -->
+        </select>
+        <label>Winner</label>
+        <input type="text" class="span3" name="winner"
+            value="{{match.winner}}">
+        <label>Title</label>
+        <select name="title">
+            <option value="">(none)</option>
+            {% for val, name in TITLES %}
+            <option value="{{val}}"
+            {% if match.title_at_stake == val %}selected="selected"{% endif %}>
+            {{name}}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <label>Notes</label>
+        <input type="text" class="span6" name="notes"
+            value="{{match.notes}}">
+        <br>
+        <button class="btn">Add Team</button>
+        <button class="btn">Add Member</button>
+        <button class="btn btn-danger">Delete Match</button>
+    </div>
     {% endfor %}
-    <!-- match clean
-    <hr>
-    <h4>Match #2</h4>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>&nbsp;</th>
-                <th>member #1</th>
-                <th>member #2</th>
-                <th>member #3</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <th>team #1</th>
-                <td><input type="text" class="span3"></td>
-                <td><input type="text" class="span3"></td>
-                <td><input type="text" class="span3"></td>
-            </tr>
-            <tr>
-                <th>team #2</th>
-                <td><input type="text" class="span3"></td>
-                <td><input type="text" class="span3"></td>
-                <td><input type="text" class="span3"></td>
-            </tr>
-            <tr>
-                <th>team #3</th>
-                <td><input type="text" class="span3"></td>
-                <td><input type="text" class="span3"></td>
-                <td><input type="text" class="span3"></td>
-            </tr>
-        </tbody>
-    </table>
-    <label>Winner</label>
-    <input type="text" class="span3">
-    <label>Win Type</label>
-    <select>
-        <option>Pin</option>
-        <option>Submission</option>
-        <option>Disqualification</option>
-    </select>
-    <button class="btn">Add Team</button>
-    <button class="btn">Add Member</button>
-    <button class="btn btn-danger">Delete Match</button>
-    /match clean -->
+    </div>
     <div>
-    <button class="btn">Add Match</button>
+    <button class="btn" id="addMatch">Add Match</button>
     {% csrf_token %}
     <input type="submit" value="Save Event" class="btn btn-primary"/>
     </div>
