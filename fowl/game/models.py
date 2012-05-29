@@ -81,8 +81,7 @@ class Event(models.Model):
 
         match = Match.objects.create(event=self,
                                      title_at_stake=title_at_stake,
-                                     notes=notes
-                                    )
+                                     notes=notes)
         for team in teams:
             mt = MatchTeam.objects.create(match=match)
             if not isinstance(team, (list, tuple)):

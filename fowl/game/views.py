@@ -10,19 +10,20 @@ def events(request, league_id):
     leagues = League.objects.all()
     events = {}
     points = TeamPoints.objects.filter(team__league_id=league_id).order_by(
-        'match', 'team').select_related()
+        'match__id', 'team').select_related()
     for tp in points:
         event_id = tp.match.event_id
         if event_id not in events:
             events[event_id] = tp.match.event
             events[event_id].scores = {}
             events[event_id].match_list = {}
-        events[event_id].match_list.setdefault(tp.match, []
-                                               ).append(tp)
+        events[event_id].match_list.setdefault(tp.match, []).append(tp)
         events[event_id].scores.setdefault(tp.team, 0)
         events[event_id].scores[tp.team] += tp.points
     events = sorted(events.values(), key=lambda x: x.date, reverse=True)
-    return render(request, "events.html", {'events': events, 'view': 'events', 'league': league, 'leagues':leagues})
+    return render(request, "events.html",
+                  {'events': events, 'view': 'events', 'league': league,
+                   'leagues':leagues})
 
 
 def edit_event(request, event):
