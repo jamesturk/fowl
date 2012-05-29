@@ -2,6 +2,7 @@
 {% block content %}
 <form class="well form-inline" action="." method="post">
     <label>Show Name</label>
+    <input type="hidden" name="id" value="{{event.id}}">
     <input type="text" class="span3" name="name" value="{{event.name}}"
       placeholder="RAW/Smackdown/PPV Name">
     <label>Date</label>

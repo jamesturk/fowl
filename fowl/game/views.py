@@ -55,6 +55,15 @@ def edit_event(request, event):
                 edict['matches'][int(match)-1]['teams'].append(v)
 
         event = Event.from_dict(edict)
+        # score the event for all active leagues
+        for league in League.objects.filter(active=True):
+            league.score_event(event)
+        # after event is scored, do title change on all matches
+        for match in event.matches.all():
+            match.do_title_change()
+        # TODO: title changes should take place inline somehow?
+        # (would fix for case if title changes twice)
+        event = event.to_dict()
 
     return render(request, "edit_event.html",
                   {'event': event,

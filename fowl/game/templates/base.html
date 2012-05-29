@@ -44,6 +44,7 @@
           <a class="brand" href="#"><img src="{% static "images/duck.png" %}" width="30" height="30"> </a>
           <div class="nav-collapse">
             <ul class="nav">
+              {% if league %} 
               <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">{{league}}<b class="caret"></b></a>
                   <ul class="dropdown-menu">
@@ -51,10 +52,12 @@
                     <li><a href="{% url league league.id %}">{{league}}</a></li>
                     {% endfor %}
                   </ul>
-              </li>
-                <li {% if view == "league" %}class="active"{%endif%}><a href="{% url league league.id %}">League</a></li>
-                <li {% if view == "events" %}class="active"{%endif%}><a href="{% url events league.id %}">Events</a></li>
-                <li {% if view == "roster" %}class="active"{%endif%}><a href="{% url roster league.id %}">Roster</a></li>
+               </li>
+
+              <li {% if view == "league" %}class="active"{%endif%}><a href="{% url league league.id %}">League</a></li>
+              <li {% if view == "events" %}class="active"{%endif%}><a href="{% url events league.id %}">Events</a></li>
+              <li {% if view == "roster" %}class="active"{%endif%}><a href="{% url roster league.id %}">Roster</a></li>
+              {% endif %}
             </ul>
           </div><!--/.nav-collapse -->
         </div>
