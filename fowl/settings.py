@@ -63,8 +63,7 @@ ROOT_URLCONF = 'fowl.urls'
 WSGI_APPLICATION = 'fowl.wsgi.application'
 
 TEMPLATE_DIRS = (
-    # Always use forward slashes, even on Windows.
-    # Don't forget to use absolute paths, not relative paths.
+    os.path.join(os.path.dirname(__file__), 'templates'),
 )
 
 INSTALLED_APPS = (
