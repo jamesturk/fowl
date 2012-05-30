@@ -1,18 +1,17 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %} League {% endblock %}
+{% block title %} {{league}} - FOWL {% endblock %}
 
 {% block content %}
 <header class="jumbotron subhead" id="overview">
-<h1>League</h1>
-  <p class="lead">An overview of our league</p>
+<h1>{{league}}</h1>
+  <p class="lead"></p>
 </header>
 <br><br>
 <h2>Belts</h2>
 
-<div class="row-fluid"> 
-  <!-- begin belt block -->
-  {% for belt in belts %}
+<div class="row-fluid">
+  {% for belt, holder in belts.iteritems %}
   <div class="span3">
     <table class="table">
       <thead>
@@ -22,25 +21,17 @@
             </td>
         </tr>
       </thead>
-      <tody>
-        <tr>
-          <td>Title holder:</td>
-          <td>I'm AWEsome</td>
-        </tr>
-        <tr>
-          <td>Held Since:</td>
-          <td>5/18/2012</td>
-        </tr>
-        <tr>
-          <td>Reign:</td>
-          <td>8</td>
-        </tr>
+      <tbody>
+          <tr> <td>Title holder:</td> <td>{{holder.name}}</td> </tr>
+          <tr> <td>Held Since:</td> <td>{{holder.date}}</td> </tr>
+          <tr> <td>Reign:</td> <td>{{holder.date|timesince}}</td> </tr>
+        {% for team,points in holder.teams.iteritems %}
+            <tr><td>{{team}}</td><td>{{points}}</td></tr>
+        {% endfor %}
       </tbody>
     </table>
   </div>
   {% endfor %}
-  <!-- end belt block -->
-
 </div>
 
 <br><br><br>
@@ -50,7 +41,7 @@
   <thead>
     <tr>
       {% for team in teams %}
-      <th style="background-color: {{team.color}}; color: #eeeeee;">{{team}}</th>
+      <th style="background-color: {{team.color}}; color: #eeeeee;"> {{team}} </th>
       {% endfor %}
     </tr>
   </thead>

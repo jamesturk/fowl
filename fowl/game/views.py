@@ -1,6 +1,7 @@
 from itertools import izip_longest
 from collections import defaultdict
 from django.shortcuts import render, get_object_or_404
+from django.db.models import Sum
 from django.contrib.auth.decorators import login_required
 from fowl.game.models import (Team, TeamPoints, Star, Event, League,
                               OUTCOMES, TITLES)
@@ -9,7 +10,7 @@ from fowl.game.models import (Team, TeamPoints, Star, Event, League,
 @login_required
 def events(request, league_id):
     league = get_object_or_404(League, pk = league_id)
-    leagues = League.objects.all()
+    leagues = League.objects.filter(teams__login=request.user)
     events = {}
     points = TeamPoints.objects.filter(team__league_id=league_id).order_by(
         'match__id', 'team').select_related()
@@ -83,23 +84,77 @@ def edit_event(request, event):
 @login_required
 def league(request, league_id):
     league = get_object_or_404(League, pk = league_id)
-    leagues = League.objects.all()
+    leagues = League.objects.filter(teams__login=request.user)
+    teams = {team.name: team for team in
+             Team.objects.filter(league__id=league_id)}
+
+    # grab the show totals for all shows
+    show_totals = TeamPoints.objects.all().values(
+        'match__event__id', 'match__event__name', 'team__name').annotate(
+            Sum('points'))
+    belts = {'us': {'name': None, 'points': 0, 'date': None,
+                    'teams': {team: 0 for team in teams}},
+             'ic': {'name': None, 'points': 0, 'date': None,
+                    'teams': {team: 0 for team in teams}},
+             'heavyweight': {'name': None, 'points': 0, 'date': None,
+                             'teams': {team: 0 for team in teams}},
+             'wwe': {'name': None, 'points': 0, 'date': None,
+                     'teams': {team: 0 for team in teams}},
+            }
+    belt_mapping = {'smackdown': 'ic', 'raw': 'us'}
+
+    # go over all events in order to determine belt holders
+    for event in Event.objects.all().order_by('date'):
+        # determine which belt is being competed for
+        belt_name = belt_mapping.get(event.name.lower(), 'heavyweight')
+        # get team scores for this event
+        team_points = TeamPoints.objects.filter(match__event=event
+                       ).values('team__name').annotate(points=Sum('points'))
+        # figure out who won event, also tally wwe belt points
+        max_points = 0
+        event_winner = []
+        for tp in team_points:
+            if tp['points'] > max_points:
+                max_points = tp['points']
+                event_winner = [tp['team__name']]
+            elif tp['points'] == max_points:
+                event_winner.append(tp['team__name'])
+            belts['wwe']['teams'][tp['team__name']] += tp['points']
+
+        # add a point to all event winners
+        for ew in event_winner:
+            belts[belt_name]['teams'][ew] += 1
+        # loop again after adding points to check for new holder
+        for ew in event_winner:
+            if belts[belt_name]['teams'][ew] > belts[belt_name]['points']:
+                belts[belt_name]['points'] = belts[belt_name]['teams'][ew]
+                if belts[belt_name]['name'] != ew:
+                    belts[belt_name]['name'] = ew
+                    belts[belt_name]['date'] = event.date
+        # do WWE belt check on PPVs
+        if belt_name == 'heavyweight':
+            belt_name = 'wwe'
+            if belts[belt_name]['teams'][ew] > belts[belt_name]['points']:
+                belts[belt_name]['points'] = belts[belt_name]['teams'][ew]
+                if belts[belt_name]['name'] != ew:
+                    belts[belt_name]['name'] = ew
+                    belts[belt_name]['date'] = event.date
+
     context = {
         'view': 'league',
-        'belts': ['ic', 'us', 'heavyweight', 'wwe'],
+        'belts': belts,
         'league': league,
         'leagues': leagues
     }
-    teams = list(Team.objects.filter(league__id=league_id))
-    context['teams'] = teams
+    context['teams'] = teams.values()
     context['star_sets'] = izip_longest(*(team.stars.all().order_by("division")
-                                          for team in teams))
+                                          for team in teams.itervalues()))
     return render(request, "league.html", context)
 
 
 def roster(request, league_id):
     league = get_object_or_404(League, pk = league_id)
-    leagues = League.objects.all()
+    leagues = League.objects.filter(teams__login=request.user)
     context = {
         'stars': Star.objects.all(),
         'view': 'roster',
