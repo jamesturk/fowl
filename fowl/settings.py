@@ -12,7 +12,7 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'fowl.db',
+        'NAME': os.path.join(os.path.dirname(__file__), 'fowl.db'),
     }
 }
 
