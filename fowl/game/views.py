@@ -96,7 +96,7 @@ def league(request, league_id):
                     'teams': {team: 0 for team in teams}},
              'ic': {'name': None, 'points': 0, 'date': None,
                     'teams': {team: 0 for team in teams}},
-             'heavyweight': {'name': None, 'points': 0, 'date': None,
+             'world': {'name': None, 'points': 0, 'date': None,
                              'teams': {team: 0 for team in teams}},
              'wwe': {'name': None, 'points': 0, 'date': None,
                      'teams': {team: 0 for team in teams}},
@@ -106,7 +106,7 @@ def league(request, league_id):
     # go over all events in order to determine belt holders
     for event in Event.objects.all().order_by('date'):
         # determine which belt is being competed for
-        belt_name = belt_mapping.get(event.name.lower(), 'heavyweight')
+        belt_name = belt_mapping.get(event.name.lower(), 'world')
         # get team scores for this event
         team_points = TeamPoints.objects.filter(match__event=event
                        ).values('team__name').annotate(points=Sum('points'))
@@ -132,7 +132,7 @@ def league(request, league_id):
                     belts[belt_name]['name'] = ew
                     belts[belt_name]['date'] = event.date
         # do WWE belt check on PPVs
-        if belt_name == 'heavyweight':
+        if belt_name == 'world':
             belt_name = 'wwe'
             if belts[belt_name]['teams'][ew] > belts[belt_name]['points']:
                 belts[belt_name]['points'] = belts[belt_name]['teams'][ew]

@@ -6,20 +6,21 @@ Q = models.Q
 # these things are independent of the game
 
 OUTCOMES = (('no contest', 'no contest'),
-            ('normal', 'normal'),
-            ('DQ', 'DQ'),
+            ('normal', 'pinfall/normal'),
+            ('dq', 'disqualification'),
             ('submission', 'submission'),
             ('appearance', 'appearance'),
             ('brawl', 'brawl'),
            )
 
 TITLES = (('wwe', 'WWE'),
-          ('heavyweight', 'Heavyweight'),
+          ('world', 'World Heavyweight'),
           ('ic', 'Intercontinental'),
           ('us', 'United States'),
           ('tag', 'Tag Team'),
           ('diva', 'Divas'),
          )
+TITLE_DICT = dict(TITLES)
 
 
 class Star(models.Model):
@@ -48,8 +49,9 @@ class Star(models.Model):
 
     def has_title(self, date=None):
         if date:
-            current_title = list(self.reigns.filter(Q(begin_date__lt=date) &
-                            (Q(end_date__gte=date) | Q(end_date__isnull=True))))
+            current_title = list(self.reigns.filter(
+                Q(begin_date__lt=date) & (Q(end_date__gte=date) |
+                                          Q(end_date__isnull=True))))
         else:
             current_title = list(self.reigns.filter(end_date__isnull=True))
         if len(current_title) < 1:
@@ -59,6 +61,12 @@ class Star(models.Model):
         else:
             return 'multiple' # FIXME
 
+    def titled_name(self, date):
+        title = self.has_title(date)
+        name = self.name
+        if title:
+            name = '{0} ({1} Champion)'.format(name, TITLE_DICT[title])
+        return name
 
     def __unicode__(self):
         return self.name
@@ -104,7 +112,7 @@ class Event(models.Model):
 
     def add_match(self, *teams, **kwargs):
         winner = kwargs.get('winner', None)
-        outcome = kwargs.get('outcome', '')
+        outcome = kwargs.get('outcome', 'no contest')
         title_at_stake = kwargs.get('title_at_stake', None)
         notes = kwargs.get('notes', '')
 
@@ -139,7 +147,8 @@ class Event(models.Model):
 class Match(models.Model):
     event = models.ForeignKey(Event, related_name='matches')
     winner = models.ForeignKey(Star, null=True)
-    outcome = models.CharField(max_length=10, choices=OUTCOMES)
+    outcome = models.CharField(max_length=10, choices=OUTCOMES,
+                               default='no contest')
     title_at_stake = models.CharField(max_length=50, choices=TITLES, null=True)
     notes = models.TextField(blank=True, default='')
 
@@ -202,7 +211,7 @@ class Match(models.Model):
 
             # figure out base points for winning
             # DQ wins are worth 1 point no matter what
-            if self.outcome == 'DQ':
+            if self.outcome == 'dq':
                 base_points = 1
                 allies = 0   # allies don't matter in a DQ
             # rumble is worth participants/2
@@ -221,13 +230,13 @@ class Match(models.Model):
                 if self.title_at_stake:
                     if winners.title == self.title_at_stake:
                         # title defense
-                        if winners.title in ('heavyweight', 'wwe'):
+                        if winners.title in ('world', 'wwe'):
                             points[w.id] += 5
                         else:
                             points[w.id] += 3
                     elif self.outcome in ('normal', 'submission'):
                         # title win!
-                        if self.title_at_stake in ('heavyweight', 'wwe'):
+                        if self.title_at_stake in ('world', 'wwe'):
                             points[w.id] += 20
                         else:
                             points[w.id] += 10
@@ -256,11 +265,22 @@ class Match(models.Model):
                 points[self.winner_id] += 1
         return points
 
-    def __unicode__(self):
-        ret = ' vs. '.join(str(t) for t in
-                           self.teams.all().prefetch_related('members'))
-        if not self.winner_id:
-            ret += ' (no contest)'
+    def fancy(self):
+        teams = [t.fancy(self.event.date) for t in
+                 self.teams.all().order_by('-victorious')
+                 .prefetch_related('members')]
+        if self.outcome in ('normal', 'dq', 'submission'):
+            ret = '{0} defeats {1}'.format(teams[0], ', '.join(teams[1:]))
+            ret += {'normal': '', 'dq': ' via disqualification',
+                    'submission': ' via submission'}[self.outcome]
+        elif self.outcome == 'appearance':
+            ret = 'appearance by {0}'.format(', '.join(teams))
+        elif self.outcome == 'brawl':
+            ret = 'brawl between {0}'.format(', '.join(teams))
+        elif self.outcome == 'no contest':
+            ret = '{0} - fight to a no contest'.format(' vs. '.join(teams))
+        else:
+            print self.outcome
         return ret
 
 
@@ -270,13 +290,8 @@ class MatchTeam(models.Model):
     victorious = models.BooleanField(default=False)
     title = models.CharField(max_length=50, choices=TITLES, null=True)
 
-    def __unicode__(self):
-        ret = ' & '.join([str(m) for m in self.members.all()])
-        if self.title:
-            ret += ' (c)'
-        if self.victorious:
-            ret += ' (v)'
-        return ret
+    def fancy(self, date):
+        return ' & '.join([m.titled_name(date) for m in self.members.all()])
 
 
 # fantasy stuff

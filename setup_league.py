@@ -8,7 +8,7 @@ Team.objects.all().delete()
 Event.objects.all().delete()
 
 _give_belt('cmpunk', 'wwe')
-_give_belt('sheamus', 'heavyweight')
+_give_belt('sheamus', 'world')
 _give_belt('kofikingston', 'tag')
 _give_belt('rtruth', 'tag')
 _give_belt('layla', 'diva')
@@ -56,7 +56,7 @@ event.add_match(['brodusclay', 'kofikingston', 'rtruth'],
                 ['themiz', 'jackswagger', 'dolphziggler'],
                 winner='brodusclay', outcome='normal')
 event.add_match('chrisjericho', 'randyorton',
-                winner='chrisjericho', outcome='DQ',
+                winner='chrisjericho', outcome='dq',
                 notes='Sheamus interfered, giving Jericho the win')
 event.add_match('paulheyman', outcome='appearance',
                 notes='Paul Heyman is going to sue for Bork Laser')
@@ -93,7 +93,7 @@ event.add_match('layla', 'bethphoenix', winner='layla',
                 outcome='normal', title_at_stake='diva')
 event.add_match('sheamus', 'randyorton', 'chrisjericho', 'albertodelrio',
                 winner='sheamus', outcome='normal',
-                title_at_stake='heavyweight')
+                title_at_stake='world')
 event.add_match('brodusclay', 'themiz', winner='brodusclay', outcome='normal')
 m = event.add_match('christian', 'codyrhodes', winner='christian',
                     outcome='normal', title_at_stake='ic')
@@ -113,8 +113,8 @@ event.add_match('davidotunga', 'johncena', winner='johncena',
 # Brawl: Tyler Reks & Curt Hawkins & Titus O'Neil & Daren Young & Sheamus
 # Brawl: Santino vs. Ricardo
 event.add_match('albertodelrio', 'randyorton', winner='randyorton',
-                outcome='DQ', notes='Jericho codebreaks RKO, Orton wins')
-event.add_match('danielbryan', 'kane', winner='danielbryan', outcome='DQ',
+                outcome='dq', notes='Jericho codebreaks RKO, Orton wins')
+event.add_match('danielbryan', 'kane', winner='danielbryan', outcome='dq',
                 notes='Kane uses chair, Bryan wins')
 event.add_match('christian', 'jindermahal', winner='christian', outcome='normal')
 event.add_match('bethphoenix', 'kellykelly', winner='bethphoenix',

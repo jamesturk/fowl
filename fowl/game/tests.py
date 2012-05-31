@@ -135,17 +135,21 @@ class MatchTest(TestCase):
         self.event = Event.objects.create(name='Wrestlemania 29',
                                           date='2012-04-01')
 
-    def test_display(self):
+    def test_fancy_display(self):
+        # no contest
         match = self.event.add_match('tripleh', 'undertaker')
-        self.assertEqual(unicode(match),
-                         'Triple H vs. Undertaker (no contest)')
+        self.assertEqual(match.fancy(),
+                         'Triple H vs. Undertaker - fight to a no contest')
+
+        # normal win
         match.record_win('undertaker', 'normal')
-        self.assertEqual(unicode(match), 'Triple H vs. Undertaker (v)')
+        self.assertEqual(match.fancy(), 'Undertaker defeats Triple H')
 
         _give_belt('cmpunk', 'wwe')
-        match = self.event.add_match('cmpunk', 'reymysterio', winner='cmpunk',
-                                     outcome='normal')
-        self.assertEqual(unicode(match), 'CM Punk (c) (v) vs. Rey Mysterio')
+        match = self.event.add_match('cmpunk', 'reymysterio', 'danielbryan',
+                                     winner='cmpunk', outcome='submission')
+        self.assertEqual(match.fancy(),
+ 'CM Punk (WWE Champion) defeats Rey Mysterio, Daniel Bryan via submission')
 
     def test_to_dict(self):
         match = self.event.add_match('jimross', 'jerrylawler', 'michaelcole',
@@ -216,7 +220,7 @@ class MatchTest(TestCase):
 
         # DQ : 1 point
         match = self.event.add_match('kane', 'undertaker', winner='undertaker',
-                                     outcome='DQ')
+                                     outcome='dq')
         self.assertEqual(match.points(), {'undertaker': 1, 'kane': 0})
 
         # submission: +1
@@ -254,7 +258,7 @@ class MatchTest(TestCase):
         match = self.event.add_match(['kofikingston', 'rtruth'],
                                      ['jackswagger', 'dolphziggler'],
                                      winner='dolphziggler',
-                                     outcome='DQ')
+                                     outcome='dq')
         self.assertEqual(match.points(), {'jackswagger': 1,
                                           'dolphziggler': 1,
                                           'kofikingston': 0,
@@ -336,7 +340,7 @@ class MatchTest(TestCase):
 
         # title non-defense (DQ/countout)
         match = self.event.add_match('christian', 'codyrhodes',
-                                     winner='codyrhodes', outcome='DQ',
+                                     winner='codyrhodes', outcome='dq',
                                      title_at_stake='ic')
         self.assertEqual(match.points(), {'codyrhodes': 1, 'christian': 1})
 
