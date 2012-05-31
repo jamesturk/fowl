@@ -33,6 +33,11 @@ class Star(models.Model):
         return self.division != 'other'
 
     def win_title(self, title, date, tag_partner=None):
+        # if they have title on that date (or won it then), don't add anything
+        if (self.has_title(date) or
+            self.reigns.filter(title=title, begin_date=date).count()):
+            return
+
         # end current title reigns
         TitleReign.objects.filter(title=title).update(end_date=date)
         self.reigns.create(title=title, begin_date=date)

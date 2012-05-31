@@ -25,6 +25,12 @@ class StarTest(TestCase):
         self.assertEqual(Star.objects.get(pk='cmpunk').has_title(), None)
         self.assertEqual(Star.objects.get(pk='danielbryan').has_title(), 'wwe')
 
+        # test multiple win does nothing
+        dbry.win_title('wwe', datetime.date(2012,1,1))
+        dbry.win_title('wwe', datetime.date(2012,2,1))
+        dbry.win_title('wwe', datetime.date(2012,3,1))
+        self.assertEqual(dbry.reigns.count(), 1)
+
         # tag belt win
         self.assertEqual(Star.objects.get(pk='kofi').has_title(), 'tag')
         self.assertEqual(Star.objects.get(pk='rtruth').has_title(), 'tag')
