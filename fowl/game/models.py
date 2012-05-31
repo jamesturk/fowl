@@ -69,6 +69,10 @@ class TitleReign(models.Model):
     begin_date = models.DateField()
     end_date = models.DateField(null=True)
 
+    def __unicode__(self):
+        return '{0} champion from {1}-{2}'.format(self.get_title_display(),
+                                                  self.begin_date,
+                                                  self.end_date or '')
 
 class Event(models.Model):
     name = models.CharField(max_length=100)
