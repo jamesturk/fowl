@@ -152,11 +152,15 @@ def league(request, league_id):
     return render(request, "league.html", context)
 
 
+@login_required
 def roster(request, league_id):
     league = get_object_or_404(League, pk = league_id)
     leagues = League.objects.filter(teams__login=request.user)
+    divisions = {'raw': [], 'smackdown': [], 'other': [], 'divas': []}
+    for star in Star.objects.all():
+        divisions[star.division].append(star)
     context = {
-        'stars': Star.objects.all(),
+        'divisions': divisions,
         'view': 'roster',
         'league': league,
         'leagues': leagues
