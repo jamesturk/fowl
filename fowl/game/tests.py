@@ -4,34 +4,53 @@ from django.contrib.auth.models import User
 from .models import Event, League, Team, TeamPoints, Star
 
 
-def _give_belt(star, belt):
-    Star.objects.get(pk=star).win_title(belt)
+def _give_belt(star, belt, date=datetime.date(2000,1,1)):
+    Star.objects.get(pk=star).win_title(belt, date)
 
 
 class StarTest(TestCase):
     def test_win_title(self):
-        Star.objects.create(pk='cmpunk', name='CM Punk', title='wwe')
+        punk = Star.objects.create(pk='cmpunk', name='CM Punk')
+        punk.win_title('wwe', datetime.date(2011,1,1))
         dbry = Star.objects.create(pk='danielbryan', name='Daniel Bryan')
-        Star.objects.create(pk='kofi', name='Kofi Kingston',
-                                   title='tag')
-        Star.objects.create(pk='rtruth', name='R Truth', title='tag')
+        kofi = Star.objects.create(pk='kofi', name='Kofi Kingston')
+        rtruth = Star.objects.create(pk='rtruth', name='R Truth')
+        kofi.win_title('tag', datetime.date(2011,1,1), tag_partner=rtruth)
         swagger = Star.objects.create(pk='swagger', name='Jack Swagger')
         ziggler = Star.objects.create(pk='ziggler', name='Dolph Ziggler')
 
         # belt win takes it away from original holder
-        self.assertEqual(Star.objects.get(pk='cmpunk').title, 'wwe')
-        dbry.win_title('wwe')
-        self.assertEqual(Star.objects.get(pk='cmpunk').title, None)
-        self.assertEqual(Star.objects.get(pk='danielbryan').title, 'wwe')
+        self.assertEqual(Star.objects.get(pk='cmpunk').has_title(), 'wwe')
+        dbry.win_title('wwe', datetime.date(2012,1,1))
+        self.assertEqual(Star.objects.get(pk='cmpunk').has_title(), None)
+        self.assertEqual(Star.objects.get(pk='danielbryan').has_title(), 'wwe')
 
         # tag belt win
-        self.assertEqual(Star.objects.get(pk='kofi').title, 'tag')
-        self.assertEqual(Star.objects.get(pk='rtruth').title, 'tag')
-        ziggler.win_title('tag', tag_partner=swagger)
-        self.assertEqual(Star.objects.get(pk='kofi').title, None)
-        self.assertEqual(Star.objects.get(pk='rtruth').title, None)
-        self.assertEqual(Star.objects.get(pk='ziggler').title, 'tag')
-        self.assertEqual(Star.objects.get(pk='swagger').title, 'tag')
+        self.assertEqual(Star.objects.get(pk='kofi').has_title(), 'tag')
+        self.assertEqual(Star.objects.get(pk='rtruth').has_title(), 'tag')
+        ziggler.win_title('tag', datetime.date(2012,1,1), tag_partner=swagger)
+        self.assertEqual(Star.objects.get(pk='kofi').has_title(), None)
+        self.assertEqual(Star.objects.get(pk='rtruth').has_title(), None)
+        self.assertEqual(Star.objects.get(pk='ziggler').has_title(), 'tag')
+        self.assertEqual(Star.objects.get(pk='swagger').has_title(), 'tag')
+
+    def test_has_title(self):
+        punk = Star.objects.create(pk='cmpunk', name='CM Punk')
+        punk.reigns.create(title='wwe', begin_date='2011-01-01', end_date='2012-01-01')
+
+        # don't have title on day it is won (FIXME?)
+        self.assertEqual(punk.has_title('2011-01-01'), None)
+        self.assertEqual(punk.has_title('2011-01-02'), 'wwe')    # have it day after
+        self.assertEqual(punk.has_title('2012-01-01'), 'wwe')    # have it on last day
+        self.assertEqual(punk.has_title('2012-01-02'), None)    # don't have it day after
+
+        punk.reigns.create(title='wwe', begin_date='2012-07-01')
+
+        # null date, means currently has title
+        self.assertEqual(punk.has_title(), 'wwe')
+        self.assertEqual(punk.has_title('2012-08-01'), 'wwe')
+
+
 
 class EventTest(TestCase):
     maxDiff = None
@@ -140,15 +159,15 @@ class MatchTest(TestCase):
         match = self.event.add_match('cmpunk', 'reymysterio', winner='cmpunk',
                                      outcome='normal', title_at_stake='wwe')
         match.do_title_change()
-        self.assertEqual(Star.objects.get(pk='cmpunk').title, 'wwe')
+        self.assertEqual(Star.objects.get(pk='cmpunk').has_title(), 'wwe')
 
         # title to mysterio
         match = self.event.add_match('cmpunk', 'reymysterio',
                                      winner='reymysterio', outcome='normal',
                                      title_at_stake='wwe')
         match.do_title_change()
-        self.assertEqual(Star.objects.get(pk='reymysterio').title, 'wwe')
-        self.assertEqual(Star.objects.get(pk='cmpunk').title, None)
+        self.assertEqual(Star.objects.get(pk='reymysterio').has_title(), 'wwe')
+        self.assertEqual(Star.objects.get(pk='cmpunk').has_title(), None)
 
         # tag title
         match = self.event.add_match(['kofikingston', 'rtruth'],
@@ -156,10 +175,11 @@ class MatchTest(TestCase):
                                      winner='dolphziggler', outcome='normal',
                                      title_at_stake='tag')
         match.do_title_change()
-        self.assertEqual(Star.objects.get(pk='kofikingston').title, None)
-        self.assertEqual(Star.objects.get(pk='rtruth').title, None)
-        self.assertEqual(Star.objects.get(pk='dolphziggler').title, 'tag')
-        self.assertEqual(Star.objects.get(pk='jackswagger').title, 'tag')
+        self.assertEqual(Star.objects.get(pk='kofikingston').has_title(), None)
+        self.assertEqual(Star.objects.get(pk='rtruth').has_title(), None)
+        self.assertEqual(Star.objects.get(pk='dolphziggler').has_title(),
+                         'tag')
+        self.assertEqual(Star.objects.get(pk='jackswagger').has_title(), 'tag')
 
         match = self.event.add_match(['kofikingston', 'rtruth'],
                                      ['jackswagger', 'dolphziggler'],

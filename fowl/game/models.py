@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+Q = models.Q
+
 # these things are independent of the game
 
 OUTCOMES = (('no contest', 'no contest'),
@@ -25,24 +27,42 @@ class Star(models.Model):
     name = models.CharField(max_length=200)
     photo_url = models.URLField()
     division = models.CharField(max_length=100)
-    title = models.CharField(max_length=20, choices=TITLES, null=True)
 
     @property
     def active(self):
         return self.division != 'other'
 
-    def win_title(self, title, tag_partner=None):
-        Star.objects.filter(title=title).update(title=None)
-        self.title = title
-        self.save()
+    def win_title(self, title, date, tag_partner=None):
+        # end current title reigns
+        TitleReign.objects.filter(title=title).update(end_date=date)
+        self.reigns.create(title=title, begin_date=date)
         if tag_partner:
             if title != 'tag':
                 raise ValueError("can't have tag partner w/ non-tag belt")
-            tag_partner.title = title
-            tag_partner.save()
+            tag_partner.reigns.create(title=title, begin_date=date)
+
+    def has_title(self, date=None):
+        if date:
+            current_title = list(self.reigns.filter(Q(begin_date__lt=date) &
+                            (Q(end_date__gte=date) | Q(end_date__isnull=True))))
+        else:
+            current_title = list(self.reigns.filter(end_date__isnull=True))
+        if len(current_title) < 1:
+            return None
+        elif len(current_title) == 1:
+            return current_title[0].title
+        else:
+            return 'multiple' # FIXME
+
 
     def __unicode__(self):
         return self.name
+
+class TitleReign(models.Model):
+    star = models.ForeignKey(Star, related_name='reigns')
+    title = models.CharField(max_length=20, choices=TITLES)
+    begin_date = models.DateField()
+    end_date = models.DateField(null=True)
 
 
 class Event(models.Model):
@@ -91,9 +111,9 @@ class Event(models.Model):
                     member = Star.objects.get(pk=member)
                 except Star.DoesNotExist:
                     raise ValueError('invalid star pk {0}'.format(member))
-                if not mt.title and member.title:
+                if not mt.title and member.has_title(self.date):
                     # multiple titles?
-                    mt.title = member.title
+                    mt.title = member.has_title(self.date)
                     mt.save()
                 mt.members.add(member)
         if winner:
@@ -135,9 +155,10 @@ class Match(models.Model):
         if self.title_at_stake:
             victors = list(self.teams.get(victorious=True).members.all())
             if len(victors) == 1:
-                victors[0].win_title(self.title_at_stake)
+                victors[0].win_title(self.title_at_stake, self.event.date)
             elif len(victors) == 2 and self.title_at_stake == 'tag':
-                victors[0].win_title(self.title_at_stake, victors[1])
+                victors[0].win_title(self.title_at_stake, self.event.date,
+                                     victors[1])
             else:
                 raise ValueError('invalid number of victors for title change')
 
