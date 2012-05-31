@@ -15,9 +15,14 @@ Star.objects.get(pk='kofikingston').win_title('tag', '2012-04-30',
                                   tag_partner=Star.objects.get(pk='rtruth'))
 Star.objects.get(pk='christian').win_title('ic', '2011-05-20')
 
-james = User.objects.create_superuser('james', 'james.p.turk@gmail.com', 'james')
-erin = User.objects.create_user('erin', 'erin.braswell@gmail.com', 'erin')
-kevin = User.objects.create_user('kevin', 'kevin.wohlgenant@gmail.com', 'kevin')
+james = User.objects.create_superuser('james', 'james.p.turk@gmail.com',
+                                      'james')
+erin = User.objects.create_superuser('erin', 'erin.braswell@gmail.com',
+                                     'erin')
+kevin = User.objects.create_superuser('kevin', 'kevin.wohlgenant@gmail.com',
+                                      'kevin')
+patrick = User.objects.create_superuser('patrick', 'patricksimmons85@gmail.com',
+                                      'patrick')
 league = League.objects.create(name='Fire Pro Wrestling')
 gm_punk = Team.objects.create(name='GM Punk', login=james, league=league,
                               color='#1540a4')
@@ -25,3 +30,5 @@ awesome = Team.objects.create(name="I'm AWEsome!", login=kevin, league=league,
                               color='#f5a506')
 cobra = Team.objects.create(name='COBRA!', login=erin, league=league,
                             color='#05c405')
+pteam = Team.objects.create(name='I Will Rule You', login=patrick,
+                            league=league, color='#a600c9')
