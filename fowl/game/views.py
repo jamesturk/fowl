@@ -159,10 +159,11 @@ def roster(request, league_id):
     divisions = {'raw': [], 'smackdown': [], 'other': [], 'divas': []}
     for star in Star.objects.all():
         divisions[star.division].append(star)
-    stars = izip_longest(divisions['raw'], divisions['smackdown'],
-                         divisions['divas'], divisions['other'])
+    star_sets = izip_longest(divisions['raw'], divisions['smackdown'],
+                         divisions['divas'], fillvalue='')
     context = {
-        'stars': stars,
+        'star_sets': star_sets,
+        'others': divisions['other'],
         'view': 'roster',
         'league': league,
         'leagues': leagues

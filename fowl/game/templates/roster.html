@@ -11,16 +11,27 @@
 <table class="table">
   <thead>
     <tr>
-      <th>Stars</th>
+      <th>Raw</th>
+      <th>Smackdown</th>
+      <th>Divas</th>
     </tr>
   </thead>
   <tbody>
-   {% for star in stars %}
+    {% for star_set in star_sets %}
     <tr>
-      <td>{{star}}<span class="label {{star.division}}">{{star.division}}</span></td>
+      {% for star in star_set %}
+      <td>{{star}}</td>
+      {% endfor %}
     </tr>
     {% endfor %}
   </tbody>
 </table>
+
+<h2>Others</h2>
+  <ul>
+    {% for other in others %}
+    <li>{{other}}</li>
+    {% endfor %}
+  </ul>
 
 {% endblock %}
