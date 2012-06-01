@@ -18,7 +18,7 @@ TITLES = (('wwe', 'WWE'),
           ('ic', 'Intercontinental'),
           ('us', 'United States'),
           ('tag', 'Tag Team'),
-          ('diva', 'Divas'),
+          ('divas', 'Divas'),
          )
 TITLE_DICT = dict(TITLES)
 

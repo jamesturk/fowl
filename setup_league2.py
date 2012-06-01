@@ -30,5 +30,34 @@ awesome = Team.objects.create(name="I'm AWEsome!", login=kevin, league=league,
                               color='#f5a506')
 cobra = Team.objects.create(name='COBRA!', login=erin, league=league,
                             color='#05c405')
-pteam = Team.objects.create(name='I Will Rule You', login=patrick,
+ruleyou = Team.objects.create(name='I Will Rule You', login=patrick,
                             league=league, color='#a600c9')
+
+for star in ('cmpunk', 'johncena', 'jackswagger',
+             'albertodelrio', 'ryback', 'damien-sandow',
+             'darrenyoung', 'aj', 'bethphoenix',
+             'ricflair', 'hbk'):
+    print star
+    awesome.add_star(star)
+
+for star in ('santinomarella', 'rtruth', 'brodusclay',
+             'dolphziggler', 'thegreatkhali', 'titusoneil',
+             'reymysterio', 'kaitlyn', 'natalya',
+             'paulheyman', 'mickfoley'):
+    print star
+    cobra.add_star(star)
+
+for star in ('bigshow', 'davidotunga', 'themiz',
+             'danielbryan', 'christian', 'williamregal',
+             'zackryder', 'layla', 'eve',
+             'roddypiper', 'edge'):
+    print star
+    ruleyou.add_star(star)
+
+for star in ('kofikingston', 'kane', 'masonryan',
+             'sheamus', 'sin-cara', 'codyrhodes',
+             'antoniocesaro', 'kharma', 'kellykelly',
+             'brock-lesnar', 'jimross'):
+    print star
+    gm_punk.add_star(star)
+
