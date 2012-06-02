@@ -61,3 +61,23 @@ for star in ('kofikingston', 'kane', 'masonryan',
     print star
     gm_punk.add_star(star)
 
+
+# 6/1 Smackdown
+event = Event.objects.create(name='Smackdown', date='2012-06-01')
+event.add_match('sin-cara', 'heathslater', winner='sin-cara',
+                outcome='normal')
+event.add_match('damien-sandow', 'ezekieljackson',
+                winner='damien-sandow', outcome='normal')
+event.add_match('ryback',
+                ['nobody1', 'nobody2'], winner='ryback',
+                outcome='normal')
+event.add_match('dolphziggler', 'sheamus',
+                winner='sheamus', outcome='normal')
+event.add_match(['titusoneil', 'darrenyoung'],
+		['santinomarella', 'zackryder'],
+		winner='santinomarella', outcome='normal')
+event.add_match('tysonkidd', 'codyrhodes',
+		winner='codyrhodes', outcome='normal')
+event.add_match('cmpunk', 'kane',
+		outcome='no contest', title_at_stake='wwe')
+league.score_event(event)
