@@ -81,3 +81,17 @@ event.add_match('tysonkidd', 'codyrhodes',
 event.add_match('cmpunk', 'kane',
 		outcome='no contest', title_at_stake='wwe')
 league.score_event(event)
+
+# 6/4 raw
+event = Event.objects.create(name='RAW', date='2012-06-04')
+event.add_match('sheamus', 'dolphziggler', winner='sheamus', outcome='normal')
+event.add_match('sin-cara', 'hunico', winner='sin-cara', outcome='normal')
+event.add_match('ryback', ['nobody1', 'nobody2'], winner='ryback',
+                outcome='normal',
+		notes='arthur rosenberg and stan stanski, names to watch')
+event.add_match('cmpunk', 'kane', outcome='normal', winner='kane')
+event.add_match(['kofikingston', 'rtruth'], ['tylerreks', 'curthawkins'],
+	        winner='kofikingston', outcome='normal')
+event.add_match('johncena', 'tensai', winner='johncena', outcome='normal')
+event.add_match('johncena', 'michaelcole', winner='johncena', outcome='normal')
+league.score_event(event)
