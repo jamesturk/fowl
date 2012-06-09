@@ -74,12 +74,12 @@ event.add_match('ryback',
 event.add_match('dolphziggler', 'sheamus',
                 winner='sheamus', outcome='normal')
 event.add_match(['titusoneil', 'darrenyoung'],
-		['santinomarella', 'zackryder'],
-		winner='santinomarella', outcome='normal')
+        ['santinomarella', 'zackryder'],
+        winner='santinomarella', outcome='normal')
 event.add_match('tysonkidd', 'codyrhodes',
-		winner='codyrhodes', outcome='normal')
+        winner='codyrhodes', outcome='normal')
 event.add_match('cmpunk', 'kane',
-		outcome='no contest', title_at_stake='wwe')
+        outcome='no contest', title_at_stake='wwe')
 league.score_event(event)
 
 # 6/4 raw
@@ -88,10 +88,31 @@ event.add_match('sheamus', 'dolphziggler', winner='sheamus', outcome='normal')
 event.add_match('sin-cara', 'hunico', winner='sin-cara', outcome='normal')
 event.add_match('ryback', ['nobody1', 'nobody2'], winner='ryback',
                 outcome='normal',
-		notes='arthur rosenberg and stan stanski, names to watch')
+        notes='arthur rosenberg and stan stanski, names to watch')
 event.add_match('cmpunk', 'kane', outcome='normal', winner='kane')
 event.add_match(['kofikingston', 'rtruth'], ['tylerreks', 'curthawkins'],
-	        winner='kofikingston', outcome='normal')
+            winner='kofikingston', outcome='normal')
 event.add_match('johncena', 'tensai', winner='johncena', outcome='normal')
 event.add_match('johncena', 'michaelcole', winner='johncena', outcome='normal')
 league.score_event(event)
+
+
+# 6/1 Smackdown
+event = Event.objects.create(name='Smackdown', date='2012-06-08')
+event.add_match('albertodelrio', 'thegreatkhali', winner='albertodelrio',
+                outcome='submission')
+event.add_match('brodusclay', 'derrickbateman', winner='brodusclay',
+                outcome='normal')
+event.add_match('sin-cara', 'drewmcintyre', winner='sin-cara', outcome='normal')
+event.add_match('ryback', ['nobody1', 'nobody2'], winner='ryback',
+                outcome='normal',
+                notes="kevin & tony will be the start of ryback's downfall")
+event.add_match('christian', 'dolphziggler', winner='christian',
+                outcome='normal')
+event.add_match('jimmyuso', 'antoniocesaro', winner='antoniocesaro',
+                outcome='normal')
+event.add_match('kane', 'sheamus', winner='sheamus', outcome='dq')
+league.score_event(event)
+
+# give patrick Jericho
+
