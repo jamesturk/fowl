@@ -254,7 +254,7 @@ class Match(models.Model):
                             if title == 'tag' and all(c == 2 for c in losers):
                                 points[w.id] += 2
                             # beat champ in non-handicap match w/o belt on line
-                            elif all(c == 1 for c in losers):
+                            elif title != 'tag' and all(c == 1 for c in losers):
                                 points[w.id] += 2
 
             # if multiple people in this match and this person was credited

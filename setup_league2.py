@@ -114,5 +114,29 @@ event.add_match('jimmyuso', 'antoniocesaro', winner='antoniocesaro',
 event.add_match('kane', 'sheamus', winner='sheamus', outcome='dq')
 league.score_event(event)
 
-# give patrick Jericho
+# give patrick Jericho instead of Regal
+ruleyou.drop_star('williamregal')
+ruleyou.add_star('chrisjericho')
+# give james alicia fox instead of kellykelly
+gm_punk.drop_star('kellykelly')
+gm_punk.add_star('aliciafox')
 
+if Star.objects.filter(pk='vader').count() == 0:
+    Star.objects.create(pk='vader', name='Vader', division='other') 
+
+event = Event.objects.create(name='RAW', date='2012-06-11')
+event.add_match('sheamus', 'tensai', winner='sheamus', outcome='normal')
+event.add_match(['santinomarella', 'layla'],
+                ['bethphoenix', 'ricardorodriguez'],
+                winner='bethphoenix', outcome='normal')
+event.add_match('dolphziggler', 'jackswagger', 'thegreatkhali', 'christian',
+                winner='dolphziggler', outcome='normal')
+event.add_match('ryback', ['nobody1', 'nobody2'], winner='ryback',
+                outcome='normal',
+                notes="two ex-presidents can't defeat ryback")
+event.add_match('bigshow', 'kofikingston', winner='bigshow', outcome='normal')
+event.add_match('sin-cara', 'curthawkins', winner='sin-cara', outcome='normal')
+event.add_match('vader', 'heathslater', winner='vader', outcome='normal')
+event.add_match(['kane', 'danielbryan'], ['cmpunk', 'aj'], winner='cmpunk',
+                outcome='normal')
+league.score_event(event)
