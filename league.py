@@ -140,3 +140,21 @@ event.add_match('vader', 'heathslater', winner='vader', outcome='normal')
 event.add_match(['kane', 'danielbryan'], ['cmpunk', 'aj'], winner='cmpunk',
                 outcome='normal')
 league.score_event(event)
+
+
+event = Event.objects.create(name='Smackdown', date='2012-06-15')
+event.add_match(['cmpunk', 'sheamus'], ['danielbryan', 'dolphziggler'],
+                winner='dolphziggler', outcome='normal')
+event.add_match('brodusclay', 'heathslater', winner='brodusclay',
+                outcome='normal',
+                notes='i think this was 10 seconds long, then otungaaaa')
+event.add_match('bethphoenix', 'aliciafox', winner='bethphoenix',
+                outcome='normal', notes='11 seconds')
+event.add_match('christian', 'jackswagger', winner='christian',
+                outcome='normal')
+event.add_match('ryback', ['nobody1', 'nobody2'], winner='ryback',
+                outcome='normal',
+                notes="you think we are a joke? - yes, we do")
+event.add_match('tysonkidd', 'damien-sandow', winner='damien-sandow',
+                outcome='normal')
+league.score_event(event)
