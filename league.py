@@ -158,3 +158,27 @@ event.add_match('ryback', ['nobody1', 'nobody2'], winner='ryback',
 event.add_match('tysonkidd', 'damien-sandow', winner='damien-sandow',
                 outcome='normal')
 league.score_event(event)
+
+
+event = Event.objects.create(name='No Way Out', date='2012-06-17')
+event.add_match('brodusclay', 'davidotunga', winner='brodusclay',
+                outcome='normal')
+event.add_match('sheamus', 'dolphziggler', winner='sheamus',
+                title_at_stake='world', outcome='normal')
+event.add_match('santinomarella', 'ricardorodriguez', winner='santinomarella',
+                outcome='normal', notes='tuxedo match')
+event.add_match('codyrhodes', 'christian', winner='christian',
+                outcome='normal', title_at_stake='ic')
+event.add_match(['jimmyuso', 'jeyuso'], ['tysonkidd', 'justingabriel'],
+                ['titusoneil', 'darrenyoung'], ['primo', 'epico'],
+                outcome='normal', winner='darrenyoung')
+event.add_match('bethphoenix', 'layla', outcome='normal', winner='layla',
+                title_at_stake='divas')
+event.add_match('sin-cara', 'hunico', outcome='normal', winner='sin-cara')
+event.add_match('cmpunk', 'danielbryan', 'kane', outcome='normal',
+                winner='cmpunk', title_at_stake='wwe')
+event.add_match('ryback', ['nobody1', 'nobody2'], winner='ryback',
+                outcome='normal',
+                notes="more jobbers ruining their lifes")
+event.add_match('johncena', 'bigshow', winner='johncena', outcome='normal')
+league.score_event(event)
