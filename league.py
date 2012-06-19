@@ -182,3 +182,22 @@ event.add_match('ryback', ['nobody1', 'nobody2'], winner='ryback',
                 notes="more jobbers ruining their lifes")
 event.add_match('johncena', 'bigshow', winner='johncena', outcome='normal')
 league.score_event(event)
+
+
+event = Event.objects.create(name='RAW', date='2012-06-18')
+event.add_match('mickfoley', outcome='appearance')
+event.add_match(['sheamus', 'cmpunk'], ['kane', 'danielbryan'],
+                winner='sheamus', outcome='normal')
+event.add_match('dolphziggler', 'jackswagger',
+                winner='dolphziggler', outcome='normal')
+event.add_match('paulheyman', outcome='appearance')
+event.add_match('santinomarella', 'albertodelrio', winner='albertodelrio',
+                outcome='submission')
+event.add_match('roddypiper', outcome='appearance',
+                notes="protecting cindi lauper's honor")
+event.add_match(['titusoneil', 'darrenyoung'], ['primo', 'epico'],
+                outcome='normal', winner='primo')
+event.add_match('johncena', ['john-laurinaitis', 'davidotunga'],
+                outcome='submission', winner='johncena',
+                notes='big show walked out')
+league.score_event(event)
