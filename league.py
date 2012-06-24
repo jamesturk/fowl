@@ -201,3 +201,20 @@ event.add_match('johncena', ['john-laurinaitis', 'davidotunga'],
                 outcome='submission', winner='johncena',
                 notes='big show walked out')
 league.score_event(event)
+
+
+event = Event.objects.create(name='Smackdown', date='2012-06-22')
+event.add_match('ryback', ['nobody1', 'nobody2'], winner='ryback',
+                outcome='normal',
+                notes="2 midgets?")
+event.add_match('albertodelrio', 'christian', winner='albertodelrio',
+                outcome='submission', notes='crotch arm breaker')
+event.add_match('kane', 'danielbryan', winner='kane', outcome='normal',
+                notes='crazy time keeper')
+event.add_match('zackryder', 'heathslater', winner='zackryder',
+                outcome='normal')
+event.add_match(['jimmyuso', 'jeyuso'], ['titusoneil', 'darrenyoung'],
+                outcome='normal', winner='titusoneil')
+event.add_match('sheamus', 'dolphziggler', winner='sheamus',
+                outcome='normal')
+league.score_event(event)
