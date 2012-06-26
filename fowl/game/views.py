@@ -76,6 +76,7 @@ def edit_event(request, event):
 
     return render(request, "edit_event.html",
                   {'event': event,
+                   'stars': Star.objects.all(),
                    'OUTCOMES': OUTCOMES,
                    'TITLES': TITLES}
                  )

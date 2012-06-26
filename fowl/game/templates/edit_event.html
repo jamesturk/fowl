@@ -2,6 +2,12 @@
 
 {% block extrascript %}
 <script>
+    var stars = [
+        {% for star in stars %}
+        {'id': '{{star.id}}', 'text': '{{star}}'}{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    ];
+
     $(document).ready(function() {
         $('#addMatch').click(function() {
             var newform = '<div class="matchform"> \
@@ -28,12 +34,21 @@
 {% for val, name in TITLES %} <option value="{{val}}"> {{name}}</option> {% endfor %} \
 </select> <br> \
 <label>Notes</label> <input type="text" class="span6" name="notes"> \
-<br> <button class="btn">Add Team</button> <button class="btn">Add Member</button> <button class="btn btn-danger">Delete Match</button> </div>';
+<br> <button class="btn">Add Team</button> <button class="btn">Add Member</button> <button class="btn btn-danger delete-btn">Delete Match</button> </div>';
             var num_matches = $('.matchform').length+1;
             $('#all-matches').append(newform.replace(/MATCH_NUM/g, num_matches));
+
+            register_handlers();
             return false;
         });
     });
+
+    var register_handlers = function() {
+        $('.delete-btn').click(function() {
+            $(this).parent().remove();
+            return false;
+        });
+    }
 </script>
 {% endblock %}
 
@@ -87,12 +102,11 @@
         </select>
         <br>
         <label>Notes</label>
-        <input type="text" class="span6" name="notes"
-            value="{{match.notes}}">
+        <input type="text" class="span6" name="notes" value="{{match.notes}}">
         <br>
         <button class="btn">Add Team</button>
         <button class="btn">Add Member</button>
-        <button class="btn btn-danger">Delete Match</button>
+        <button class="btn btn-danger delete-btn">Delete Match</button>
     </div>
     {% endfor %}
     </div>
