@@ -186,6 +186,8 @@ class Match(models.Model):
         losers = []
         title_teams = {}
         team_count = 0
+        battle_royal = False
+
         for team in self.teams.all():
             for star in team.members.all():
                 points[star.id] = 0
@@ -218,6 +220,7 @@ class Match(models.Model):
             elif team_count > 6:
                 base_points = team_count / 2
                 allies = 0   # no allies in a rumble
+                battle_royal = True
             else:
                 # normal wins are worth 2
                 allies = winner_count - 1
@@ -245,7 +248,7 @@ class Match(models.Model):
                         for star in title_teams[self.title_at_stake
                                                ].members.all():
                             points[star.id] += 1
-                else:
+                elif not battle_royal:
                     # look over titles in match, to score a title-nondefense
                     for title, title_team in title_teams.iteritems():
                         # beat someone w/ title in a non-defense

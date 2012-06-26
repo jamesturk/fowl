@@ -218,3 +218,19 @@ event.add_match(['jimmyuso', 'jeyuso'], ['titusoneil', 'darrenyoung'],
 event.add_match('sheamus', 'dolphziggler', winner='sheamus',
                 outcome='normal')
 league.score_event(event)
+
+
+event = Event.objects.create(name='RAW', date='2012-06-25')
+event.add_match('kane', 'cmpunk', 'danielbryan', winner='danielbryan',
+                outcome='normal')
+event.add_match('brodusclay', 'bigshow', winner='bigshow', outcome='normal')
+event.add_match('santinomarella', 'jackswagger', winner='santinomarella',
+                title_at_stake='us', outcome='normal')
+event.add_match('dolphziggler', 'albertodelrio', notes='botched?')
+event.add_match('bethphoenix', 'aliciafox', 'kaitlyn', 'maxine', 'rosamendes',
+                'nobody1', 'vickieguerrero', 'aj', 'natalya', 'layla',
+                winner='aj', notes='beach battle royal')
+event.add_match('johncena', 'chrisjericho', outcome='dq', winner='johncena',
+                notes='big show interferes')
+league.score_event(event)
+
