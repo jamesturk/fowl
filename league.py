@@ -234,3 +234,20 @@ event.add_match('johncena', 'chrisjericho', outcome='dq', winner='johncena',
                 notes='big show interferes')
 league.score_event(event)
 
+
+event = Event.objects.create(name='Smackdown', date='2012-06-29')
+event.add_match('aj', 'layla', winner='layla', outcome='normal')
+event.add_match('zackryder', 'damien-sandow', winner='damien-sandow',
+                outcome='normal')
+event.add_match('tysonkidd', 'jackswagger', winner='tysonkidd',
+                outcome='normal')
+event.add_match(['santinomarella', 'christian'], ['codyrhodes', 'davidotunga'],
+                winner='christian', outcome='normal')
+event.add_match('ryback', ['nobody1', 'nobody2'], winner='ryback',
+                outcome='normal',
+                notes="2 midgets?")
+event.add_match('tensai', 'justingabriel', winner='tensai', outcome='normal')
+event.add_match('sheamus', 'dolphziggler', 'albertodelrio', winner='sheamus',
+                outcome='normal', title_at_stake='world')
+league.score_event(event)
+
