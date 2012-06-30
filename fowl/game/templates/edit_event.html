@@ -1,6 +1,9 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block extrascript %}
+<link href="{% static "select2-2.1/select2.css" %}" rel="stylesheet">
+<script src="{% static "select2-2.1/select2.js" %}"></script>
 <script>
     var stars = [
         {% for star in stars %}
@@ -10,45 +13,79 @@
 
     $(document).ready(function() {
         $('#addMatch').click(function() {
-            var newform = '<div class="matchform"> \
-<h4>Match</h4> \
-<table class="table"> <tbody> \
-    <tr> <th>team #1</th> \
-        <td><input type="text" class="span3" name="members-MATCH_NUM-1" value=""> </td> \
-        <td><input type="text" class="span3" name="members-MATCH_NUM-1" value=""> </td> \
-    </tr> \
-    <tr> <th>team #2</th> \
-        <td><input type="text" class="span3" name="members-MATCH_NUM-2" value=""> </td> \
-        <td><input type="text" class="span3" name="members-MATCH_NUM-2" value=""> </td> \
-    </tr> \
-    <tr> <th>team #3</th> \
-        <td><input type="text" class="span3" name="members-MATCH_NUM-3" value=""> </td> \
-        <td><input type="text" class="span3" name="members-MATCH_NUM-3" value=""> </td> \
-    </tr> \
-</tbody> </table> \
-<label>Outcome</label> <select name="outcome"> \
+            var newform = '<div class="matchform" id="match-MATCH_NUM"> \
+<h4>Match #MATCH_NUM</h4> \
+<table class="table"><tbody id="tbody-MATCH_NUM"> </tbody></table> \
+<input type="hidden" class="star-select" name="winner" /> \
+<select class="outcome-select" name="outcome"> \
 {% for val, name in OUTCOMES %} <option value="{{val}}">{{name}}</option> {% endfor %} \
 </select> \
-<label>Winner</label> <input type="text" class="span3" name="winner"> \
-<label>Title</label> <select name="title"> <option value="">(none)</option> \
-{% for val, name in TITLES %} <option value="{{val}}"> {{name}}</option> {% endfor %} \
-</select> <br> \
-<label>Notes</label> <input type="text" class="span6" name="notes"> \
-<br> <button class="btn">Add Team</button> <button class="btn">Add Member</button> <button class="btn btn-danger delete-btn">Delete Match</button> </div>';
+<select class="title-select" name="title"> \
+<option value="" selected="selected">(no title at stake)</option> \
+{% for val, name in TITLES %} <option value="{{val}}">{{name}}</option> {% endfor %} \
+</select> \
+<br><label>Notes</label> <input type="text" class="span6" name="notes"> \
+<br><button class="btn addteam-btn">Add Team</button> <button class="btn addmember-btn">Add Member</button> <button class="btn btn-danger delete-btn">Delete Match</button> </div>';
             var num_matches = $('.matchform').length+1;
             $('#all-matches').append(newform.replace(/MATCH_NUM/g, num_matches));
 
-            register_handlers();
+            var last = $($('#all-matches').children().last()[0]);
+
+            last.find('.star-select').last().select2({
+                data:stars,
+                allowClear: true,
+                placeholder: 'Winner'
+            });
+
+            last.find('.delete-btn').click(function() {
+                $(this).parent().remove();
+                return false;
+            });
+
+            last.find('.addteam-btn').click(function() {
+                add_team($(this).parent());
+                return false;
+            });
+
+            last.find('.addmember-btn').click(function() {
+                $(this).parent().find('tr').each(function(i, e) {
+                    add_member(e, 1, i+1);
+                });
+                return false;
+            });
+
+            // add 2 teams
+            add_team(last);
+            add_team(last);
+
             return false;
         });
     });
 
-    var register_handlers = function() {
-        $('.delete-btn').click(function() {
-            $(this).parent().remove();
-            return false;
+    var add_team = function(matchdiv) {
+        var match_num = $(matchdiv)[0].id.replace(/match-/, '');
+        var team_num = $(matchdiv).find('tr').length+1;
+        var template = '<tr id="row-MATCHNUM-TEAMNUM"> <th>team #TEAMNUM</th> </tr>';
+        template = template.replace(/MATCHNUM/g, match_num);
+        template = template.replace(/TEAMNUM/g, team_num);
+        $(matchdiv).find('tbody').append(template);
+        add_member($(matchdiv).find('tr').last(), match_num, team_num);
+    };
+
+    var add_member = function(tr) {
+        var pieces = $(tr)[0].id.split('-');
+        var match_num = pieces[1];
+        var team_num = pieces[2];
+        var template = '<td><input type="hidden" style="width: 150px;" class="star-select" name="members-MATCHNUM-TEAMNUM" /></td>';
+        template = template.replace(/MATCHNUM/g, match_num);
+        template = template.replace(/TEAMNUM/g, team_num);
+        $(tr).append(template);
+        $(tr).find('input').last().select2({
+            data:stars,
+            allowClear: true,
+            placeholder: '------',
         });
-    }
+    };
 </script>
 {% endblock %}
 
@@ -60,56 +97,7 @@
       placeholder="RAW/Smackdown/PPV Name">
     <label>Date</label>
     <input type="text" class="span3" name="date" value="{{event.date}}" placeholder="YYYY-MM-DD">
-    <div id="all-matches">
-    {% for match in event.matches %}
-    <div class="matchform">
-        <h4>Match</h4>
-        <table class="table">
-            <tbody>
-                {% for team in match.teams %}
-                <tr>
-                    <th>team #{{forloop.counter}}</th>
-                    {% for member in team %}
-                    <td><input type="text" class="span3"
-                        {# member-event_id-team_id #}
-                        name="members-{{forloop.parentloop.parentloop.counter}}-{{forloop.parentloop.counter}}"
-                            value="{{member}}">
-                    </td>
-                    {% endfor %}
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <label>Outcome</label>
-        <select name="outcome">
-            {% for val, name in OUTCOMES %}
-            <option value="{{val}}" 
-            {% if match.outcome == val %}selected="selected"{% endif %}>
-            {{name}}</option>
-            {% endfor %}
-        </select>
-        <label>Winner</label>
-        <input type="text" class="span3" name="winner"
-            value="{{match.winner}}">
-        <label>Title</label>
-        <select name="title">
-            <option value="">(none)</option>
-            {% for val, name in TITLES %}
-            <option value="{{val}}"
-            {% if match.title_at_stake == val %}selected="selected"{% endif %}>
-            {{name}}</option>
-            {% endfor %}
-        </select>
-        <br>
-        <label>Notes</label>
-        <input type="text" class="span6" name="notes" value="{{match.notes}}">
-        <br>
-        <button class="btn">Add Team</button>
-        <button class="btn">Add Member</button>
-        <button class="btn btn-danger delete-btn">Delete Match</button>
-    </div>
-    {% endfor %}
-    </div>
+    <div id="all-matches"> </div>
     <div>
     <button class="btn" id="addMatch">Add Match</button>
     {% csrf_token %}
