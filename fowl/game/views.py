@@ -1,7 +1,7 @@
 import json
 from itertools import izip_longest
 from collections import defaultdict
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Sum
 from django.contrib.auth.decorators import login_required
 from fowl.game.models import (Team, TeamPoints, Star, Event, League,
@@ -73,7 +73,8 @@ def edit_event(request, event):
             match.do_title_change()
         # TODO: title changes should take place inline somehow?
         # (would fix for case if title changes twice)
-        event = event.to_dict()
+
+        return redirect('edit_event', event.id)
 
     if event:
         match_json = json.dumps(event['matches'])
