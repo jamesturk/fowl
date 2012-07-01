@@ -131,7 +131,7 @@
     <input type="text" class="span3" name="name" value="{{event.name}}"
       placeholder="RAW/Smackdown/PPV Name">
     <label>Date</label>
-    <input type="text" class="span3" name="date" value="{{event.date}}" placeholder="YYYY-MM-DD">
+    <input type="text" class="span3" name="date" value="{{event.date|date:"Y-m-d"}}" placeholder="YYYY-MM-DD">
     <div id="all-matches"> </div>
     <div>
     <button class="btn" id="addMatch">Add Match</button>
