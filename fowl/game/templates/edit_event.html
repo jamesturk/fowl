@@ -6,17 +6,26 @@
 <script src="{% static "select2-2.1/select2.js" %}"></script>
 <script>
     var stars = [
-        {% for star in stars %}
-        {'id': '{{star.id}}', 'text': '{{star}}'}{% if not forloop.last %}, {% endif %}
-        {% endfor %}
+        {% for star in stars %} {'id': '{{star.id}}', 'text': '{{star}}'}{% if not forloop.last %}, {% endif %} {% endfor %}
     ];
 
     $(document).ready(function() {
         $('#addMatch').click(function() {
-            var newform = '<div class="matchform" id="match-MATCH_NUM"> \
+            add_match();
+            return false;
+        });
+
+        var matches = {{match_json|safe}};
+        for(var i=0; i < matches.length; ++i) {
+            add_match(matches[i]);
+        }
+    });
+
+    var add_match = function(match) {
+        var newform = '<div class="matchform" id="match-MATCH_NUM"> \
 <h4>Match #MATCH_NUM</h4> \
 <table class="table"><tbody id="tbody-MATCH_NUM"> </tbody></table> \
-<input type="hidden" class="star-select" name="winner" /> \
+<input type="hidden" class="winner-select" name="winner" /> \
 <select class="outcome-select" name="outcome"> \
 {% for val, name in OUTCOMES %} <option value="{{val}}">{{name}}</option> {% endfor %} \
 </select> \
@@ -24,55 +33,71 @@
 <option value="" selected="selected">(no title at stake)</option> \
 {% for val, name in TITLES %} <option value="{{val}}">{{name}}</option> {% endfor %} \
 </select> \
-<br><label>Notes</label> <input type="text" class="span6" name="notes"> \
+<br><label>Notes</label> <input type="text" class="span6 notes" name="notes"> \
 <br><button class="btn addteam-btn">Add Team</button> <button class="btn addmember-btn">Add Member</button> <button class="btn btn-danger delete-btn">Delete Match</button> </div>';
-            var num_matches = $('.matchform').length+1;
-            $('#all-matches').append(newform.replace(/MATCH_NUM/g, num_matches));
+        var num_matches = $('.matchform').length+1;
+        $('#all-matches').append(newform.replace(/MATCH_NUM/g, num_matches));
 
-            var last = $($('#all-matches').children().last()[0]);
+        var last = $($('#all-matches').children().last()[0]);
 
-            last.find('.star-select').last().select2({
-                data:stars,
-                allowClear: true,
-                placeholder: 'Winner'
-            });
+        last.find('.winner-select').last().select2({
+            data: stars,
+            allowClear: true,
+            placeholder: 'Winner',
+            initSelection: init_selection
+        });
 
-            last.find('.delete-btn').click(function() {
-                $(this).parent().remove();
-                return false;
-            });
-
-            last.find('.addteam-btn').click(function() {
-                add_team($(this).parent());
-                return false;
-            });
-
-            last.find('.addmember-btn').click(function() {
-                $(this).parent().find('tr').each(function(i, e) {
-                    add_member(e, 1, i+1);
-                });
-                return false;
-            });
-
-            // add 2 teams
-            add_team(last);
-            add_team(last);
-
+        last.find('.delete-btn').click(function() {
+            $(this).parent().remove();
             return false;
         });
-    });
 
-    var add_team = function(matchdiv) {
+        last.find('.addteam-btn').click(function() {
+            add_team($(this).parent());
+            return false;
+        });
+
+        last.find('.addmember-btn').click(function() {
+            $(this).parent().find('tr').each(function(i, e) {
+                add_member(e);
+            });
+            return false;
+        });
+
+        if(match) {
+            last.find('.outcome-select').val(match.outcome);
+            last.find('.title-select').val(match.title_at_stake);
+            last.find('.winner-select').val(match.winner).change();
+            last.find('.notes').val(match.notes);
+            for(var i=0; i < match.teams.length; ++i) {
+                add_team(last, match.teams[i]);
+            }
+        } else {
+            // add 2 teams to start
+            add_team(last);
+            add_team(last);
+        }
+    };
+
+    var add_team = function(matchdiv, team) {
         var match_num = $(matchdiv)[0].id.replace(/match-/, '');
-        var team_num = $(matchdiv).find('tr').length+1;
+        var team_num = $(matchdiv).find('tr').length + 1;
         var template = '<tr id="row-MATCHNUM-TEAMNUM"> <th>team #TEAMNUM</th> </tr>';
         template = template.replace(/MATCHNUM/g, match_num);
         template = template.replace(/TEAMNUM/g, team_num);
         $(matchdiv).find('tbody').append(template);
-        add_member($(matchdiv).find('tr').last(), match_num, team_num);
+        var last = $(matchdiv).find('tr').last();
+
+        if(team) {
+            for(var i=0; i < team.length; ++i) {
+                add_member(last, team[i]);
+            }
+        } else {
+            add_member(last);
+        }
     };
 
-    var add_member = function(tr) {
+    var add_member = function(tr, member) {
         var pieces = $(tr)[0].id.split('-');
         var match_num = pieces[1];
         var team_num = pieces[2];
@@ -80,12 +105,22 @@
         template = template.replace(/MATCHNUM/g, match_num);
         template = template.replace(/TEAMNUM/g, team_num);
         $(tr).append(template);
-        $(tr).find('input').last().select2({
+        console.log(member);
+        $(tr).find('input').last().val(member).select2({
             data:stars,
             allowClear: true,
             placeholder: '------',
+            initSelection: init_selection
         });
     };
+
+    var init_selection = function(element) {
+        for(var i=0; i < stars.length; ++i) {
+            if(stars[i].id == element.val()) {
+                return stars[i];
+            }
+        }
+    }
 </script>
 {% endblock %}
 

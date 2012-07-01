@@ -1,3 +1,4 @@
+import json
 from itertools import izip_longest
 from collections import defaultdict
 from django.shortcuts import render, get_object_or_404
@@ -74,8 +75,14 @@ def edit_event(request, event):
         # (would fix for case if title changes twice)
         event = event.to_dict()
 
+    if event:
+        match_json = json.dumps(event['matches'])
+    else:
+        match_json = []
+
     return render(request, "edit_event.html",
                   {'event': event,
+                   'match_json': match_json,
                    'stars': Star.objects.all(),
                    'OUTCOMES': OUTCOMES,
                    'TITLES': TITLES}
