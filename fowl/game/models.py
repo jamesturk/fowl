@@ -217,7 +217,7 @@ class Match(models.Model):
                 base_points = 1
                 allies = 0   # allies don't matter in a DQ
             # rumble is worth participants/2
-            elif team_count > 6:
+            elif team_count > 8:
                 base_points = team_count / 2
                 allies = 0   # no allies in a rumble
                 battle_royal = True
@@ -248,7 +248,7 @@ class Match(models.Model):
                         for star in title_teams[self.title_at_stake
                                                ].members.all():
                             points[star.id] += 1
-                elif not battle_royal:
+                elif not battle_royal and len(title_teams) == 1:
                     # look over titles in match, to score a title-nondefense
                     for title, title_team in title_teams.iteritems():
                         # beat someone w/ title in a non-defense
