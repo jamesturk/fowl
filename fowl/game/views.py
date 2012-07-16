@@ -143,11 +143,12 @@ def league(request, league_id):
         # do WWE belt check on PPVs
         if belt_name == 'world':
             belt_name = 'wwe'
-            if belts[belt_name]['teams'][ew] > belts[belt_name]['points']:
-                belts[belt_name]['points'] = belts[belt_name]['teams'][ew]
-                if belts[belt_name]['name'] != ew:
-                    belts[belt_name]['name'] = ew
-                    belts[belt_name]['date'] = event.date
+            for team in teams:
+                if belts[belt_name]['teams'][team] > belts[belt_name]['points']:
+                    belts[belt_name]['points'] = belts[belt_name]['teams'][team]
+                    if belts[belt_name]['name'] != team:
+                        belts[belt_name]['name'] = team
+                        belts[belt_name]['date'] = event.date
 
     context = {
         'view': 'league',
