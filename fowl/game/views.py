@@ -113,7 +113,8 @@ def league(request, league_id):
     belt_mapping = {'smackdown': 'ic', 'raw': 'us'}
 
     # go over all events in order to determine belt holders
-    for event in Event.objects.filter(date__gte=league.start_date
+    for event in Event.objects.filter(date__gte=league.start_date,
+                                      date__lte=league.end_date
                                      ).order_by('date'):
         # determine which belt is being competed for
         belt_name = belt_mapping.get(event.name.lower(), 'world')
