@@ -302,6 +302,7 @@ class MatchTeam(models.Model):
 class League(models.Model):
     name = models.CharField(max_length=100)
     active = models.BooleanField(default=True)
+    start_date = models.DateField()
     raw_picks = models.IntegerField(default=3)
     smackdown_picks = models.IntegerField(default=3)
     diva_picks = models.IntegerField(default=2)
