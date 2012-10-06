@@ -110,7 +110,7 @@ def league(request, league_id):
              'wwe': {'name': None, 'points': 0, 'date': None,
                      'teams': {team: 0 for team in teams}},
             }
-    belt_mapping = {'smackdown': 'ic', 'raw': 'us'}
+    belt_mapping = {'smackdown': 'ic', 'raw': 'us', 'main event': 'ic'}
 
     # go over all events in order to determine belt holders
     for event in Event.objects.filter(date__gte=league.start_date,

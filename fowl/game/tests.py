@@ -375,7 +375,9 @@ class LeagueTest(TestCase):
                                              'password')
         self.user2 = User.objects.create_user('me2', 'test@example.com',
                                               'password')
-        self.league = League.objects.create(name='FOWL')
+        self.league = League.objects.create(name='FOWL',
+                                            start_date='2010-01-01',
+                                            end_date='2013-01-01')
         self.teddy = Team.objects.create(name='Team Teddy', login=self.user,
                                          league=self.league)
         self.johnny = Team.objects.create(name='Team Johnny', login=self.user2,

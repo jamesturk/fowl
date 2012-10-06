@@ -248,7 +248,7 @@ class Match(models.Model):
                         for star in title_teams[self.title_at_stake
                                                ].members.all():
                             points[star.id] += 1
-                elif not battle_royal and len(title_teams) == 1:
+                elif not battle_royal:
                     # look over titles in match, to score a title-nondefense
                     for title, title_team in title_teams.iteritems():
                         # beat someone w/ title in a non-defense
@@ -311,7 +311,7 @@ class League(models.Model):
     oldtimer_picks = models.IntegerField(default=2)
 
     def score_event(self, event):
-        ppv_bonus = 1 if event.name.lower() not in ('raw', 'smackdown') else 0
+        ppv_bonus = 1 if event.name.lower() not in ('raw', 'smackdown', 'main event') else 0
         TeamPoints.objects.filter(match__event=event).delete()
         for match in event.matches.all():
             for star, points in match.points().iteritems():
