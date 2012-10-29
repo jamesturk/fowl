@@ -40,7 +40,7 @@ class Star(models.Model):
             return
 
         # end current title reigns
-        TitleReign.objects.filter(title=title).update(end_date=date)
+        TitleReign.objects.filter(title=title, end_date=None).update(end_date=date)
         self.reigns.create(title=title, begin_date=date)
         if tag_partner:
             if title != 'tag':
@@ -59,7 +59,7 @@ class Star(models.Model):
         elif len(current_title) == 1:
             return current_title[0].title
         else:
-            return 'multiple' # FIXME
+            return 'multiple titles: ' + '&'.join(t.title for t in current_title)
 
     def titled_name(self, date):
         title = self.has_title(date)
@@ -170,7 +170,7 @@ class Match(models.Model):
         self.save()
 
     def do_title_change(self):
-        if self.title_at_stake:
+        if self.title_at_stake and self.outcome != 'dq':
             victors = list(self.teams.get(victorious=True).members.all())
             if len(victors) == 1:
                 victors[0].win_title(self.title_at_stake, self.event.date)
